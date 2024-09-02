@@ -4,6 +4,7 @@ const { sequelize } = require('../models');
 
 /**
  * Retrieves form details by form name and processes any `lov_sql` and `lov_sql_convert_in` into a list of options.
+ * This is used to display the form fields with updated dropdowns on frontend.
  *
  * @param {string} formName - The name of the form.
  * @param {number|string} websiteId - The website ID to be used in SQL queries.
@@ -149,38 +150,5 @@ exports.getFormDetails = async (formName) => {
   } catch (error) {
     console.error('Error fetching comprehensive form details:', error);
     throw new Error('Failed to fetch comprehensive form details');
-  }
-};
-
-
-/**
- * Executes a SQL query from the lov_sql field and returns the options.
- *
- * @param {string} sqlQuery - The SQL query to execute.
- * @param {Object} replacements - An object containing the parameters to replace in the SQL query.
- * @returns {Promise<Array<string>>} - An array of options resulting from the SQL query.
- * @throws {Error} - If the SQL query fails to execute.
- */
-exports.getOptionsFromLovSql = async (sqlQuery, replacements) => {
-  try {
-    // Execute the SQL query with replacements
-    const [results] = await sequelize.query(sqlQuery, {
-      replacements, // Object containing parameters like { website_id: someValue }
-      type: sequelize.QueryTypes.SELECT,
-    });
-
-    // Assuming that there is only one column in the result, which can be named anything
-    const columnNames = Object.keys(results[0] || {});
-    if (columnNames.length !== 1) {
-      throw new Error('Unexpected number of columns in SQL result. Expected exactly one.');
-    }
-
-    const columnName = columnNames[0];
-
-    // Extract the values from the result and return them as an array of strings
-    return results.map(row => row[columnName]);
-  } catch (error) {
-    console.error('Error executing SQL query:', error);
-    throw new Error('Failed to execute SQL query');
   }
 };

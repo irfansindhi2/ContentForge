@@ -3,7 +3,8 @@ const { List, ListMaster, ListDetails } = require('../models');
 
 /**
  * Service function to fetch list details based on list name.
- *
+ * This is used to display the list columns on frontend.
+ * 
  * @param {string} listName - The name of the list to fetch details for.
  * @returns {Promise<Object[]>} - An array of list master records with associated list details.
  * @throws {Error} - If the list is not found or if an error occurs during retrieval.
