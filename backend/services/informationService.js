@@ -15,19 +15,17 @@ const formValidator = require('../validators/formValidator');
  * @returns {Promise<Object>} - An object containing the count of records and the retrieved information rows.
  * @throws {Error} - If any error occurs during retrieval.
  */
-exports.getInformationListByWebsite = async (formName, websiteId, limit = 12, offset = 0, sortOptions = {}, searchConditions = {}) => {
+exports.getInformationListByWebsite = async (listName, websiteId, limit = 12, offset = 0, sortOptions = {}, searchConditions = {}) => {
   try {
-    // Get the primary key column name for the given form
-    const primaryKeyColumn = await formService.getPrimaryKeyColumn(formName);
-    
-    // Get the table name and where clause for the given form
-    const { table_name, where_clause } = await listService.getTableAndWhereClause(formName);
 
-    // Get the column names for the given form
-    const columns = await listService.getColumnNamesByListName(formName);
+    // Get the table name, where clause, order by clause, and actual form name from ListMaster
+    const { table_name, where_clause, order_by, form_name, columns } = await listService.getTableDetailsWithColumns(listName);
 
-    // Get searchable columns
-    const searchableColumns = await formService.getSearchableColumns(formName);
+    // Use the actual form_name retrieved from ListMaster instead of the inputFormName
+    const formName = form_name
+
+    // Get the primary key column name and rest of the columns for the given form
+    const { primaryKeyColumn, searchableColumns } = await formService.getFormDetails(formName);
 
     // Build the WHERE clause for search conditions
     const { whereClause: searchWhereClause, replacements: searchReplacements } = buildWhereClause(searchConditions, searchableColumns);
@@ -43,9 +41,14 @@ exports.getInformationListByWebsite = async (formName, websiteId, limit = 12, of
       }
     }
 
-    // Default to ORDER BY last_update_date DESC if no valid orderByClause is built
+    // Use the dynamic order_by from ListMaster if no sort options are provided
     if (!orderByClause) {
-      orderByClause = 'ORDER BY last_update_date DESC';
+      if (order_by) {
+        orderByClause = `ORDER BY ${order_by}`;
+      } else {
+        // Optionally, handle the case where even order_by is not available
+        orderByClause = '';
+      }
     }
 
     // Combine the where clause with search conditions and where_clause from listService
@@ -86,26 +89,23 @@ exports.getInformationListByWebsite = async (formName, websiteId, limit = 12, of
 /**
  * Fetches information by primary key and website ID.
  *
- * @param {string} formName - The name of the form.
+ * @param {string} listName - The name of the list.
  * @param {number|string} id - The primary key value.
  * @param {number|string} websiteId - The website ID.
  * @returns {Promise<Object>} - The retrieved information record.
  * @throws {Error} - If the information is not found or if an error occurs during retrieval.
  */
-exports.getInformationByPrimaryKeyAndWebsite = async (formName, id, websiteId) => {
+exports.getInformationByPrimaryKeyAndWebsite = async (listName, id, websiteId) => {
   try {
-    // Get the primary key column name for the given form
-    const primaryKeyColumn = await formService.getPrimaryKeyColumn(formName);
+    // Get the table name, where clause, and form name from ListMaster
+    const { table_name, where_clause, form_name } = await listService.getTableDetailsWithColumns(listName);
 
-    // Get the table name and where clause for the given form
-    const { table_name, where_clause } = await listService.getTableAndWhereClause(formName);
-
-    // Get the column names using the new function
-    const columns = await formService.getColumnNamesByFormName(formName);
+    // Get comprehensive form details including primary key and all columns
+    const { primaryKeyColumn, allActiveColumns } = await formService.getFormDetails(form_name);
 
     // Construct the SQL query
     const query = `
-      SELECT ${columns.join(', ')}
+      SELECT ${allActiveColumns.join(', ')}
       FROM ${table_name}
       WHERE ${primaryKeyColumn} = :id AND website_id = :websiteId ${where_clause ? `AND ${where_clause}` : ''}
     `;
@@ -131,32 +131,32 @@ exports.getInformationByPrimaryKeyAndWebsite = async (formName, id, websiteId) =
 
 
 /**
- * Creates a new information entry dynamically based on form name.
+ * Creates a new information entry dynamically based on list name.
  *
- * @param {string} formName - The name of the form.
+ * @param {string} listName - The name of the list.
  * @param {number|string} websiteId - The website ID.
  * @param {Object} data - The data to be inserted.
  * @returns {Promise<Object>} - The newly created information record.
  * @throws {Error} - If an error occurs during the creation.
  */
-exports.createInformation = async (formName, websiteId, data) => {
+exports.createInformation = async (listName, websiteId, data) => {
   try {
+    console.log('Creating information for website ID:', websiteId);
 
-    // Fetch form details with the required flag
-    const formDetails = await formService.getFormDetailsWithRequiredFlag(formName);
+    // Get the table name, where clause, and form name from ListMaster
+    const { table_name, where_clause, form_name } = await listService.getTableDetailsWithColumns(listName);
+
+    // Get comprehensive form details including primary key and all columns
+    const { primaryKeyColumn, allActiveColumns, formDetailsWithFlags } = await formService.getFormDetails(form_name);
 
     // Validate required fields using the validator
-    formValidator.validateRequiredFields(formDetails, data);
-
-    // Get the table name and primary key column for the given form
-    const { table_name } = await listService.getTableAndWhereClause(formName);
-    const primaryKeyColumn = await formService.getPrimaryKeyColumn(formName);
+    formValidator.validateRequiredFields(formDetailsWithFlags, data);
 
     // Format any date fields in the data object
     data = formatDatesInJson(data);
 
     // Process each column in formDetails that has a lov_sql_convert_out
-    for (const detail of formDetails) {
+    for (const detail of formDetailsWithFlags) {
       if (detail.lovSqlConvertOut) {
         // Dynamically determine the last parameter to pass
         const lastParameterName = extractLastParameter(detail.lovSqlConvertOut);
@@ -177,6 +177,8 @@ exports.createInformation = async (formName, websiteId, data) => {
         data[detail.columnName] = dynamicResult; // Assign the result to the correct column
       }
     }
+
+    console.log('Data after lov_sql_convert_out processing:', data);
 
     // Fetch the maximum primary key value for the given website ID
     const maxResult = await sequelize.query(
@@ -187,70 +189,108 @@ exports.createInformation = async (formName, websiteId, data) => {
       }
     );
 
+    console.log('Max Result:', maxResult);
+
     // Calculate the new primary key value
     const newPrimaryKeyValue = (maxResult[0]?.maxId || 0) + 1;
+
+    console.log('New Primary Key Value:', newPrimaryKeyValue);
 
     // Set the new primary key and website ID in the data object
     data[primaryKeyColumn] = newPrimaryKeyValue;
     data.website_id = websiteId;
 
+    // Filter out undefined or null values, but always include website_id and primaryKeyColumn
+    const insertData = allActiveColumns.reduce((acc, column) => {
+      if (data[column] !== undefined && data[column] !== null) {
+        acc[column] = data[column];
+      }
+      return acc;
+    }, {});
+    insertData.website_id = websiteId;
+    insertData[primaryKeyColumn] = newPrimaryKeyValue;
+
+    console.log('Insert Data:', insertData);
+
     // Construct the SQL query for inserting the new record
-    const fields = Object.keys(data).join(', ');
-    const values = Object.keys(data).map((key) => `:${key}`).join(', ');
+    const fields = Object.keys(insertData).join(', ');
+    const values = Object.keys(insertData).map((key) => `:${key}`).join(', ');
 
     const query = `
       INSERT INTO ${table_name} (${fields})
       VALUES (${values})
     `;
 
+    console.log('Insert Query:', query);
+    console.log('Insert Replacements:', insertData);
+
     // Execute the insert query
     await sequelize.query(query, {
-      replacements: data,
+      replacements: insertData,
       type: sequelize.QueryTypes.INSERT,
     });
+
+    console.log('Insert query executed');
+
+    // Verify the insertion immediately
+    const verificationQuery = `
+      SELECT * FROM ${table_name}
+      WHERE ${primaryKeyColumn} = :newId AND website_id = :websiteId
+      ${where_clause ? `AND ${where_clause}` : ''}
+    `;
+
+    const [verificationResult] = await sequelize.query(verificationQuery, {
+      replacements: { newId: newPrimaryKeyValue, websiteId },
+      type: sequelize.QueryTypes.SELECT,
+    });
+
+    console.log('Verification result:', verificationResult);
+
+    if (!verificationResult) {
+      throw new Error('Failed to verify the inserted record');
+    }
 
     return {
       status: 'success',
       message: 'Resource created successfully',
-      data: { [primaryKeyColumn]: newPrimaryKeyValue, ...data },
+      data: verificationResult,
     };
   } catch (error) {
     console.error('Error creating information:', error);
-    throw new Error('Failed to create information');
+    throw new Error('Failed to create information: ' + error.message);
   }
 };
 
 
 /**
- * Updates an existing information entry dynamically based on form name.
+ * Updates an existing information entry dynamically based on list name.
  *
- * @param {string} formName - The name of the form.
+ * @param {string} listName - The name of the list.
  * @param {number|string} id - The primary key value.
  * @param {number|string} websiteId - The website ID.
  * @param {Object} data - The data to be updated.
  * @returns {Promise<Object>} - The result of the update operation.
- * @throws {Error} - If an error occurs during the update or the record is not found.
+ * @throws {Error} - If an error occurs during the update.
  */
-exports.updateInformation = async (formName, id, websiteId, data) => {
+exports.updateInformation = async (listName, id, websiteId, data) => {
   try {
+    console.log('Updating information for website ID:', websiteId, 'and ID:', id);
 
-    // Fetch form details with the required flag
-    const formDetails = await formService.getFormDetailsWithRequiredFlag(formName);
+    // Get the table name, where clause, and form name from ListMaster
+    const { table_name, where_clause, form_name } = await listService.getTableDetailsWithColumns(listName);
+
+    // Get comprehensive form details including primary key and all columns
+    const { primaryKeyColumn, allActiveColumns, formDetailsWithFlags } = await formService.getFormDetails(form_name);
 
     // Validate required fields using the validator
-    formValidator.validateRequiredFields(formDetails, data);
-    
-    // Get the table name and primary key column for the given form
-    const { table_name } = await listService.getTableAndWhereClause(formName);
-    const primaryKeyColumn = await formService.getPrimaryKeyColumn(formName);
+    formValidator.validateRequiredFields(formDetailsWithFlags, data);
 
     // Format any date fields in the data object
     data = formatDatesInJson(data);
 
     // Process each column in formDetails that has a lov_sql_convert_out
-    for (const detail of formDetails) {
+    for (const detail of formDetailsWithFlags) {
       if (detail.lovSqlConvertOut) {
-        // Dynamically determine the last parameter to pass
         const lastParameterName = extractLastParameter(detail.lovSqlConvertOut);
         const replacementValue = data[lastParameterName];
       
@@ -270,88 +310,131 @@ exports.updateInformation = async (formName, id, websiteId, data) => {
       }
     }
 
+    console.log('Data after lov_sql_convert_out processing:', data);
+
+    // Filter out undefined or null values, and only include columns that are in allActiveColumns
+    const updateData = allActiveColumns.reduce((acc, column) => {
+      if (data[column] !== undefined && data[column] !== null) {
+        acc[column] = data[column];
+      }
+      return acc;
+    }, {});
+
+    console.log('Update Data:', updateData);
+
     // Construct the SQL query for updating the record
-    const setClause = Object.keys(data).map((key) => `${key} = :${key}`).join(', ');
+    const setClause = Object.keys(updateData).map((key) => `${key} = :${key}`).join(', ');
 
     const query = `
       UPDATE ${table_name}
       SET ${setClause}
       WHERE ${primaryKeyColumn} = :id AND website_id = :websiteId
+      ${where_clause ? `AND ${where_clause}` : ''}
     `;
 
+    console.log('Update Query:', query);
+    console.log('Update Replacements:', { ...updateData, id, websiteId });
+
     // Execute the update query
-    const [affectedRows] = await sequelize.query(query, {
-      replacements: { id, websiteId, ...data },
+    const [result, affectedRows] = await sequelize.query(query, {
+      replacements: { ...updateData, id, websiteId },
       type: sequelize.QueryTypes.UPDATE,
     });
 
-    let message;
-    if (affectedRows === 0) {
-      // Check if the record exists
-      const existingRecord = await this.getInformationByPrimaryKeyAndWebsite(formName, id, websiteId);
+    console.log('Update query executed. Result:', result);
+    console.log('Affected Rows:', affectedRows);
 
-      if (!existingRecord) {
-        throw new Error('Information not found');
-      } else {
-        message = 'No changes were made as the data is identical to the existing record';
-      }
-    } else {
-      message = 'Resource updated successfully';
+    if (affectedRows === 0) {
+      return {
+        status: 'not_modified',
+        message: 'Record not found or no changes were made',
+        statusCode: 404
+      };
     }
 
     return {
       status: 'success',
-      message,
-      affectedRows,
+      message: 'Resource updated successfully',
+      statusCode: 200,
+      affectedRows
     };
   } catch (error) {
     console.error('Error updating information:', error);
-    throw new Error('Failed to update information');
+    throw new Error('Failed to update information: ' + error.message);
   }
 };
 
 
 /**
- * Deletes an information entry dynamically based on form name.
+ * Deletes an information entry dynamically based on list name.
+ * 
+ * This method includes an additional check to verify if the record exists before attempting the deletion.
+ * This is necessary because the `DELETE` operation in Sequelize may not reliably return the number of affected rows,
+ * and depending on the database driver, the result might be `undefined` or not contain `affectedRows`.
  *
- * @param {string} formName - The name of the form.
+ * @param {string} listName - The name of the list.
  * @param {number|string} id - The primary key value.
  * @param {number|string} websiteId - The website ID.
  * @returns {Promise<Object>} - The result of the delete operation.
  * @throws {Error} - If an error occurs during the deletion or the record is not found.
  */
-exports.deleteInformation = async (formName, id, websiteId) => {
+exports.deleteInformation = async (listName, id, websiteId) => {
   try {
-    // Get the table name and primary key column for the given form
-    const { table_name } = await listService.getTableAndWhereClause(formName);
-    const primaryKeyColumn = await formService.getPrimaryKeyColumn(formName);
+    console.log('Deleting information for website ID:', websiteId, 'and ID:', id);
+
+    // Get the table name and form name from ListMaster
+    const { table_name, form_name } = await listService.getTableDetailsWithColumns(listName);
+
+    // Get the primary key column from FormDetails
+    const { primaryKeyColumn } = await formService.getFormDetails(form_name);
+
+    // Check if the record exists before attempting to delete
+    const checkQuery = `
+      SELECT 1 FROM ${table_name}
+      WHERE ${primaryKeyColumn} = :id AND website_id = :websiteId
+      LIMIT 1
+    `;
+    const [existingRecord] = await sequelize.query(checkQuery, {
+      replacements: { id, websiteId },
+      type: sequelize.QueryTypes.SELECT,
+    });
+
+    if (!existingRecord) {
+      return {
+        status: 'error',
+        message: 'Information not found or already deleted',
+        statusCode: 404,
+      };
+    }
 
     // Construct the SQL query for deleting the record
-    const query = `
+    const deleteQuery = `
       DELETE FROM ${table_name}
       WHERE ${primaryKeyColumn} = :id AND website_id = :websiteId
     `;
 
-    // Execute the delete query using raw query
-    const result = await sequelize.query(query, {
+    console.log('Delete Query:', deleteQuery);
+
+    // Execute the delete query
+    const result = await sequelize.query(deleteQuery, {
       replacements: { id, websiteId },
-      type: sequelize.QueryTypes.RAW, // Use RAW for manual query execution
+      type: sequelize.QueryTypes.DELETE,
     });
 
-    // Extract affectedRows from the first ResultSetHeader in the result array
-    const affectedRows = result && result[0] && result[0].affectedRows ? result[0].affectedRows : 0;
+    console.log('Delete query executed. Result:', result);
 
-    // Check the number of affected rows
-    if (affectedRows === 0) {
-      return { status: 'error', message: 'Information not found', statusCode: 404 };
-    }
-
-    return { status: 'success', message: 'Resource deleted successfully', statusCode: 200 };
+    // Return success since the record was found and delete query was executed
+    return {
+      status: 'success',
+      message: 'Resource deleted successfully',
+      statusCode: 200,
+    };
   } catch (error) {
     console.error('Error deleting information:', error);
-    throw new Error('Failed to delete information');
+    throw new Error('Failed to delete information: ' + error.message);
   }
 };
+
 
 /**
  * Executes the `lov_sql_convert_out` query and returns the resulting value.

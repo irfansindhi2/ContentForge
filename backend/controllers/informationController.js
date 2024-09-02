@@ -9,7 +9,7 @@ const informationService = require('../services/informationService');
  * @returns {Promise<void>} - Sends a JSON response with the retrieved information.
  */
 exports.getInformationListByWebsite = async (req, res) => {
-  const { formName } = req.params; // Extract formName from the URL parameters
+  const { listName } = req.params; // Extract listName from the URL parameters
   const limit = parseInt(req.query.limit, 10) || 12;  // Set the limit of records, defaulting to 12 if not provided
   const offset = parseInt(req.query.offset, 10) || 0; // Set the offset for pagination, defaulting to 0
 
@@ -30,7 +30,7 @@ exports.getInformationListByWebsite = async (req, res) => {
 
     // Fetch the list of information from the service layer with sorting options
     const { count, rows } = await informationService.getInformationListByWebsite(
-      formName, 
+      listName, 
       websiteId, 
       limit, 
       offset, 
@@ -56,7 +56,7 @@ exports.getInformationListByWebsite = async (req, res) => {
  * @returns {Promise<void>} - Sends a JSON response with the retrieved information.
  */
 exports.getInformationByPrimaryKeyAndWebsite = async (req, res) => {
-  const { id, formName } = req.params; // Extract the primary key ID and formName from the URL parameters
+  const { id, listName } = req.params; // Extract the primary key ID and listName from the URL parameters
   const websiteId = req.session.user?.website_id; // Get the website ID from the session
 
   try {
@@ -66,7 +66,7 @@ exports.getInformationByPrimaryKeyAndWebsite = async (req, res) => {
     }
 
     // Fetch the specific information by primary key and website ID
-    const information = await informationService.getInformationByPrimaryKeyAndWebsite(formName, id, websiteId);
+    const information = await informationService.getInformationByPrimaryKeyAndWebsite(listName, id, websiteId);
 
     // Send a successful response with the retrieved information
     res.status(200).json(information);
@@ -86,7 +86,7 @@ exports.getInformationByPrimaryKeyAndWebsite = async (req, res) => {
  * @returns {Promise<void>} - Sends a JSON response with the created information.
  */
 exports.createInformation = async (req, res) => {
-  const { formName } = req.params; // Extract formName from the URL parameters
+  const { listName } = req.params; // Extract listName from the URL parameters
 
   try {
     // Retrieve the website ID from the session
@@ -101,7 +101,7 @@ exports.createInformation = async (req, res) => {
     const data = req.body;
 
     // Create the new information entry using the service layer
-    const newInformation = await informationService.createInformation(formName, websiteId, data);
+    const newInformation = await informationService.createInformation(listName, websiteId, data);
 
     // Send a successful response with the created information
     res.status(201).json(newInformation);
@@ -121,7 +121,7 @@ exports.createInformation = async (req, res) => {
  * @returns {Promise<void>} - Sends a JSON response with the update result.
  */
 exports.updateInformation = async (req, res) => {
-  const { id, formName } = req.params; // Extract the primary key ID and formName from the URL parameters
+  const { id, listName } = req.params; // Extract the primary key ID and listName from the URL parameters
   const websiteId = req.session.user?.website_id; // Get the website ID from the session
   const data = req.body; // Get the data to update from the request body
 
@@ -132,7 +132,7 @@ exports.updateInformation = async (req, res) => {
     }
 
     // Update the information entry using the service layer
-    const updatedInformation = await informationService.updateInformation(formName, id, websiteId, data);
+    const updatedInformation = await informationService.updateInformation(listName, id, websiteId, data);
 
     // Send a successful response with the result of the update
     res.json(updatedInformation);
@@ -152,7 +152,7 @@ exports.updateInformation = async (req, res) => {
  * @returns {Promise<void>} - Sends a JSON response with the delete result.
  */
 exports.deleteInformation = async (req, res) => {
-  const { id, formName } = req.params; // Extract the primary key ID and formName from the URL parameters
+  const { id, listName } = req.params; // Extract the primary key ID and listName from the URL parameters
   const websiteId = req.session.user?.website_id; // Get the website ID from the session
 
   try {
@@ -162,7 +162,7 @@ exports.deleteInformation = async (req, res) => {
     }
 
     // Delete the information entry using the service layer
-    const result = await informationService.deleteInformation(formName, id, websiteId);
+    const result = await informationService.deleteInformation(listName, id, websiteId);
 
     // Send a successful response with the result of the delete operation
     return res.status(result.statusCode).json({ status: result.status, message: result.message });

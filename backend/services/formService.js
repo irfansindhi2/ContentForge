@@ -97,112 +97,61 @@ exports.getFormDetailsByName = async (formName, websiteId, id) => {
 
 
 /**
- * Retrieves the primary key column name for a given form.
+ * Retrieves comprehensive form details including primary key column, searchable columns, all active column names, required flag, and lov_sql_convert_out.
  *
  * @param {string} formName - The name of the form.
- * @returns {Promise<string>} - The name of the primary key column.
- * @throws {Error} - If the form master or primary key column is not found, or if an error occurs during retrieval.
+ * @returns {Promise<Object>} - An object containing the primary key column name, an array of searchable column names, an array of all active column names, and form details with required flags and lov_sql_convert_out.
+ * @throws {Error} - If the form master or required columns are not found, or if an error occurs during retrieval.
  */
-exports.getPrimaryKeyColumn = async (formName) => {
+exports.getFormDetails = async (formName) => {
   try {
     // Retrieve the form master by name
-    const formMaster = await FormMaster.findOne({
-      where: { name: formName },
-    });
-
-    if (!formMaster) {
-      throw new Error('Form Master not found');
-    }
-
-    // Retrieve form details where key_type is "Primary"
-    const primaryKeyColumn = await FormDetails.findOne({
-      where: { form_master_id: formMaster.form_master_id, key_type: "Primary", active: 'Yes' },
-      attributes: ['column_name'],
-    });
-
-    if (!primaryKeyColumn) {
-      throw new Error('Primary key column not found');
-    }
-
-    return primaryKeyColumn.column_name;
-  } catch (error) {
-    console.error('Error fetching primary key column:', error);
-    throw new Error('Failed to fetch primary key column');
-  }
-};
-
-/**
- * Retrieves form details including the required flag for a given form.
- *
- * @param {string} formName - The name of the form.
- * @returns {Promise<Object[]>} - An array of objects containing column names and their required flag status.
- * @throws {Error} - If any error occurs during retrieval.
- */
-exports.getFormDetailsWithRequiredFlag = async (formName) => {
-  try {
-    // Retrieve the form master by name
-    const formMaster = await FormMaster.findOne({
-      where: { name: formName },
-    });
-
-    if (!formMaster) {
-      throw new Error('Form Master not found');
-    }
-
-    // Retrieve form details, including the required flag and lov_sql_convert_out, ordered by order_sequence
-    const formDetails = await FormDetails.findAll({
-      where: { form_master_id: formMaster.form_master_id, active: 'Yes' },
-      attributes: ['column_name', 'required_flag', 'lov_sql_convert_out'],
-    });
-
-    // Debug log to check if lov_sql_convert_out is retrieved
-    console.log('Form Details with lov_sql_convert_out:', formDetails);
-
-    // Map the results to a more convenient format
-    return formDetails.map(detail => ({
-      columnName: detail.column_name,
-      isRequired: detail.required_flag === 'Yes',
-      lovSqlConvertOut: detail.lov_sql_convert_out || null, // Include lov_sql_convert_out if present
-    }));
-  } catch (error) {
-    console.error('Error fetching form details with required flag:', error);
-    throw new Error('Failed to fetch form details with required flag');
-  }
-};
-
-/**
- * Retrieves the column names based on the provided formName.
- *
- * @param {string} formName - The name of the form for which to retrieve the column names.
- * @returns {Promise<Array<string>>} - An array of column names.
- * @throws {Error} - If the formName is not found or any error occurs during retrieval.
- */
-exports.getColumnNamesByFormName = async (formName) => {
-  try {
-    // Fetch the FormMaster entry corresponding to the formName
     const formMaster = await FormMaster.findOne({
       where: { name: formName },
       include: [{
         model: FormDetails,
-        attributes: ['column_name'],
+        attributes: ['column_name', 'key_type', 'search_flag', 'required_flag', 'lov_sql_convert_out'],
         where: { active: 'Yes' },
       }],
     });
 
-    // Check if the FormMaster entry was found
     if (!formMaster || !formMaster.FormDetails.length) {
       throw new Error(`FormMaster entry or active FormDetails for form name ${formName} not found`);
     }
 
-    // Extract and return column names from FormDetails
-    const columns = formMaster.FormDetails.map(detail => detail.column_name);
-    return columns;
+    // Extract the primary key column
+    const primaryKeyColumn = formMaster.FormDetails.find(detail => detail.key_type === 'Primary');
+    if (!primaryKeyColumn) {
+      throw new Error('Primary key column not found');
+    }
+
+    // Extract the searchable columns
+    const searchableColumns = formMaster.FormDetails
+      .filter(detail => detail.search_flag === 'Yes')
+      .map(detail => detail.column_name);
+
+    // Extract all active columns
+    const allActiveColumns = formMaster.FormDetails.map(detail => detail.column_name);
+
+    // Extract form details with required flag and lov_sql_convert_out
+    const formDetailsWithFlags = formMaster.FormDetails.map(detail => ({
+      columnName: detail.column_name,
+      isRequired: detail.required_flag === 'Yes',
+      lovSqlConvertOut: detail.lov_sql_convert_out || null, // Include lov_sql_convert_out if present
+    }));
+
+    return {
+      primaryKeyColumn: primaryKeyColumn.column_name,
+      searchableColumns,
+      allActiveColumns,
+      formDetailsWithFlags,
+    };
   } catch (error) {
-    // Log the error and rethrow it for the calling function to handle
-    console.error('Error retrieving column names:', error);
-    throw new Error('Failed to retrieve column names');
+    console.error('Error fetching comprehensive form details:', error);
+    throw new Error('Failed to fetch comprehensive form details');
   }
 };
+
 
 /**
  * Executes a SQL query from the lov_sql field and returns the options.
@@ -233,34 +182,5 @@ exports.getOptionsFromLovSql = async (sqlQuery, replacements) => {
   } catch (error) {
     console.error('Error executing SQL query:', error);
     throw new Error('Failed to execute SQL query');
-  }
-};
-
-/**
- * Retrieves the columns that have the search_flag set to 'Yes'.
- *
- * @param {string} formName - The name of the form.
- * @returns {Promise<Array<string>>} - An array of column names that can be searched.
- * @throws {Error} - If an error occurs during retrieval.
- */
-exports.getSearchableColumns = async (formName) => {
-  try {
-    const formMaster = await FormMaster.findOne({
-      where: { name: formName },
-      include: [{
-        model: FormDetails,
-        attributes: ['column_name'],
-        where: { active: 'Yes', search_flag: 'Yes' },
-      }],
-    });
-
-    if (!formMaster || !formMaster.FormDetails.length) {
-      throw new Error(`FormMaster entry or searchable FormDetails for form name ${formName} not found`);
-    }
-
-    return formMaster.FormDetails.map(detail => detail.column_name);
-  } catch (error) {
-    console.error('Error fetching searchable columns:', error);
-    throw new Error('Failed to fetch searchable columns');
   }
 };

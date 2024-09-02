@@ -36,49 +36,18 @@ exports.getListDetails = async (listName) => {
 };
 
 /**
- * Retrieves the table name and where clause based on the provided listName.
+ * Retrieves the table details including table name, where clause, order by clause, form name, and column names based on the provided listName.
  *
- * @param {string} listName - The name of the form for which to retrieve the table name and where clause.
- * @returns {Promise<Object>} - An object containing the table_name and where_clause.
+ * @param {string} listName - The name of the form for which to retrieve the details.
+ * @returns {Promise<Object>} - An object containing the table_name, where_clause, order_by, form_name, and an array of column names.
  * @throws {Error} - If the listName is not found or any error occurs during retrieval.
  */
-exports.getTableAndWhereClause = async (listName) => {
-  try {
-    // Fetch the ListMaster entry corresponding to the listName
-    const listMaster = await ListMaster.findOne({
-      where: { form_name: listName, active: 'Yes' },
-      attributes: ['table_name', 'where_clause'], // Only retrieve the necessary columns
-    });
-
-    // Check if the ListMaster entry was found
-    if (!listMaster) {
-      throw new Error(`ListMaster entry for form name ${listName} not found`);
-    }
-
-    // Return the table name and where clause
-    return {
-      table_name: listMaster.table_name,
-      where_clause: listMaster.where_clause || '', // Default to an empty string if no where_clause is defined
-    };
-  } catch (error) {
-    // Log the error and rethrow it for the calling function to handle
-    console.error('Error retrieving table name and where clause:', error);
-    throw new Error('Failed to retrieve table name and where clause');
-  }
-};
-
-/**
- * Retrieves the column names based on the provided listName.
- *
- * @param {string} listName - The name of the form for which to retrieve the column names.
- * @returns {Promise<Array<string>>} - An array of column names.
- * @throws {Error} - If the listName is not found or any error occurs during retrieval.
- */
-exports.getColumnNamesByListName = async (listName) => {
+exports.getTableDetailsWithColumns = async (listName) => {
   try {
     // Fetch the ListMaster entry corresponding to the listName
     const listMaster = await ListMaster.findOne({
       where: { name: listName, active: 'Yes' },
+      attributes: ['table_name', 'where_clause', 'order_by', 'form_name'], // Retrieve the necessary columns including order_by and form_name
       include: [{
         model: ListDetails,
         attributes: ['column_name'],
@@ -91,12 +60,20 @@ exports.getColumnNamesByListName = async (listName) => {
       throw new Error(`ListMaster entry or active ListDetails for list name ${listName} not found`);
     }
 
-    // Extract and return column names from ListDetails
+    // Extract column names from ListDetails
     const columns = listMaster.ListDetails.map(detail => detail.column_name);
-    return columns;
+
+    // Return the table details and column names
+    return {
+      table_name: listMaster.table_name,
+      where_clause: listMaster.where_clause || '', // Default to an empty string if no where_clause is defined
+      order_by: listMaster.order_by || '', // Default to an empty string if no order_by is defined
+      form_name: listMaster.form_name || '',
+      columns,
+    };
   } catch (error) {
     // Log the error and rethrow it for the calling function to handle
-    console.error('Error retrieving column names:', error);
-    throw new Error('Failed to retrieve column names');
+    console.error('Error retrieving table details and column names:', error);
+    throw new Error('Failed to retrieve table details with columns');
   }
 };
