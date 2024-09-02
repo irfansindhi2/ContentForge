@@ -17,12 +17,11 @@ const formValidator = require('../validators/formValidator');
  */
 exports.getInformationListByWebsite = async (listName, websiteId, limit = 12, offset = 0, sortOptions = {}, searchConditions = {}) => {
   try {
-
     // Get the table name, where clause, order by clause, and actual form name from ListMaster
     const { table_name, where_clause, order_by, form_name, columns } = await listService.getTableDetailsWithColumns(listName);
 
     // Use the actual form_name retrieved from ListMaster instead of the inputFormName
-    const formName = form_name
+    const formName = form_name;
 
     // Get the primary key column name and rest of the columns for the given form
     const { primaryKeyColumn, searchableColumns } = await formService.getFormDetails(formName);
@@ -45,17 +44,31 @@ exports.getInformationListByWebsite = async (listName, websiteId, limit = 12, of
     if (!orderByClause) {
       if (order_by) {
         orderByClause = `ORDER BY ${order_by}`;
-      } else {
-        // Optionally, handle the case where even order_by is not available
-        orderByClause = '';
       }
     }
 
     // Combine the where clause with search conditions and where_clause from listService
     const finalWhereClause = `website_id = :websiteId ${where_clause ? `AND ${where_clause}` : ''} ${searchWhereClause}`;
 
-    // Construct the SQL query with the dynamic ORDER BY clause and search WHERE clause
-    const query = `
+    // ** Count Query **
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM ${table_name}
+      WHERE ${finalWhereClause}
+    `;
+
+    // Execute the count query
+    const countResult = await sequelize.query(countQuery, {
+      replacements: {
+        websiteId,
+        ...searchReplacements
+      },
+      type: sequelize.QueryTypes.SELECT,
+    });
+    const totalRecords = countResult[0].total;
+
+    // ** Data Query **
+    const dataQuery = `
       SELECT ${columns.join(', ')}
       FROM ${table_name}
       WHERE ${finalWhereClause}
@@ -63,22 +76,19 @@ exports.getInformationListByWebsite = async (listName, websiteId, limit = 12, of
       LIMIT :offset, :limit
     `;
 
-    // Combine the replacements for the where_clause and search conditions
-    const replacements = {
-      websiteId, 
-      limit, 
-      offset, 
-      ...searchReplacements
-    };
-
-    // Execute the query with the provided website ID, limit, offset, and search conditions
-    const results = await sequelize.query(query, {
-      replacements,
+    // Execute the data query
+    const rows = await sequelize.query(dataQuery, {
+      replacements: {
+        websiteId,
+        limit,
+        offset,
+        ...searchReplacements
+      },
       type: sequelize.QueryTypes.SELECT,
     });
 
-    // Return the count of records, the primary key column name, and the retrieved rows
-    return { count: results.length, primaryKeyColumn, rows: results };
+    // Return the total count of records and the retrieved rows
+    return { count: totalRecords, primaryKeyColumn, rows };
   } catch (error) {
     console.error('Error fetching information list:', error);
     throw new Error('Failed to fetch information list');

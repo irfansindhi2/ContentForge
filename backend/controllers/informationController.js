@@ -10,8 +10,8 @@ const informationService = require('../services/informationService');
  */
 exports.getInformationListByWebsite = async (req, res) => {
   const { listName } = req.params; // Extract listName from the URL parameters
-  const limit = parseInt(req.query.limit, 10) || 12;  // Set the limit of records, defaulting to 12 if not provided
-  const offset = parseInt(req.query.offset, 10) || 0; // Set the offset for pagination, defaulting to 0
+  const limit = parseInt(req.body.limit, 10) || 12;  // Set the limit of records, defaulting to 12 if not provided
+  const offset = parseInt(req.body.offset, 10) || 0; // Set the offset for pagination, defaulting to 0
 
   try {
     // Retrieve the website ID from the session

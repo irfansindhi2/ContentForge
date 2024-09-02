@@ -37,10 +37,16 @@ export const fetchListData = async (listName, searchConditions = {}, limit = 12,
     return acc;
   }, {});
 
+  // const requestBody = {
+  //   ...(Object.keys(filteredSearchConditions).length > 0 && { searchConditions: filteredSearchConditions }),
+  //   ...(limit !== 12 && { limit }),
+  //   ...(offset !== 0 && { offset }),
+  // };
+
   const requestBody = {
-    ...(Object.keys(filteredSearchConditions).length > 0 && { searchConditions: filteredSearchConditions }),
-    ...(limit !== 12 && { limit }),
-    ...(offset !== 0 && { offset }),
+    searchConditions: filteredSearchConditions,
+    limit,  // Include limit in the request body
+    offset, // Include offset in the request body
   };
 
   const response = await fetch(`${API_URL}/api/information/list/${listName}`, {

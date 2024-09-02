@@ -15,16 +15,20 @@ export const useListLogic = () => {
   const [searchConditions, setSearchConditions] = useState(() => sessionService.getSearchConditions(listName) || {});
   const [loading, setLoading] = useState(true);
   const [listMetadata, setListMetadata] = useState(null);
+  const [limit, setLimit] = useState(12); // Items per page
+  const [offset, setOffset] = useState(0); // Offset for pagination
+  const [totalRecords, setTotalRecords] = useState(0); // Total number of records
+  const [sortConfig, setSortConfig] = useState({ key: '', direction: '' }); // Sort configuration
 
-  const fetchList = useCallback(async (conditions = {}) => {
+  const fetchList = useCallback(async (conditions = {}, limit = 12, offset = 0) => {
     setLoading(true);
     try {
       const [listData, metadata] = await Promise.all([
-        fetchListData(listName, conditions),
+        fetchListData(listName, conditions, limit, offset),
         fetchListMetadata(listName)
       ]);
       
-      setListMetadata(metadata[0]); // Assuming the API returns an array with a single object
+      setListMetadata(metadata[0]);
 
       const validColumns = metadata[0].ListDetails
         .filter(detail => detail.primary_flag !== "Yes")
@@ -35,7 +39,6 @@ export const useListLogic = () => {
       const primaryKeyColumn = metadata[0].ListDetails.find(detail => detail.primary_flag === "Yes")?.column_name;
       setPrimaryKey(primaryKeyColumn || '');
 
-      // Include the primary key in the table data
       const filteredData = listData.data.map(row => {
         const filteredRow = { [primaryKeyColumn]: row[primaryKeyColumn] };
         validColumns.forEach(col => {
@@ -47,6 +50,7 @@ export const useListLogic = () => {
       });
 
       setTableData(filteredData);
+      setTotalRecords(listData.total); // Set total records for pagination
     } catch (error) {
       console.error('Error fetching list data:', error);
     } finally {
@@ -62,7 +66,7 @@ export const useListLogic = () => {
           if (formData) {
             const searchableFields = formData.formDetails?.filter(detail => detail.search_flag === 'Yes') || [];
             setSearchFields(searchableFields);
-
+  
             const initialSearchConditions = {};
             searchableFields.forEach(field => {
               initialSearchConditions[field.column_name] = { operator: '=', value: '' };
@@ -76,12 +80,16 @@ export const useListLogic = () => {
       fetchFormMetadata();
     } else {
       if (location.state?.searchConditions) {
-        fetchList(location.state.searchConditions);
+        fetchList(location.state.searchConditions, limit, offset);
       } else {
-        fetchList();
+        fetchList({}, limit, offset);
       }
     }
-  }, [listName, location, fetchList]);
+  }, [listName, location, limit, offset, fetchList]);
+
+  const handlePageChange = (newOffset) => {
+    setOffset(newOffset);
+  };
 
   const handleSearchChange = (e) => {
     const { name, value } = e.target;
@@ -111,7 +119,7 @@ export const useListLogic = () => {
   };
 
   const handleEdit = useCallback((id) => {
-    navigate(`/list/${listName}/${id}`);
+    navigate(`/form/${listName}?id=${id}`); 
   }, [navigate, listName]);
 
   const handleDelete = async (id) => {
@@ -129,6 +137,17 @@ export const useListLogic = () => {
     }
   };
 
+  const handleSort = (columnName, direction) => {
+    const sortedData = [...tableData].sort((a, b) => {
+      if (a[columnName] < b[columnName]) return direction === 'asc' ? -1 : 1;
+      if (a[columnName] > b[columnName]) return direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    setSortConfig({ key: columnName, direction });
+    setTableData(sortedData);
+  };
+
   return {
     listName,
     tableData,
@@ -142,5 +161,11 @@ export const useListLogic = () => {
     handleEdit,
     loading,
     listMetadata,
+    limit,
+    offset,
+    handlePageChange,
+    totalRecords,
+    handleSort,
+    sortConfig,
   };
 };

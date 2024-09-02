@@ -15,4 +15,10 @@ export const parseLovStatic = (lovStatic) => {
   
     return options;
   };
+
+  const generateImageName = () => {
+    const now = new Date();
+    const formattedDate = `${now.getDate()}-${now.getMonth() + 1}-${now.getFullYear()}-${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}-${now.getMilliseconds()}`;
+    return `${formattedDate}.jpg`;
+  };
   
