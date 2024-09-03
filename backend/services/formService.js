@@ -111,7 +111,7 @@ exports.getFormDetails = async (formName) => {
       where: { name: formName },
       include: [{
         model: FormDetails,
-        attributes: ['column_name', 'key_type', 'search_flag', 'required_flag', 'lov_sql_convert_out'],
+        attributes: ['column_name', 'key_type', 'input_type', 'search_flag', 'required_flag', 'lov_sql_convert_out'],
         where: { active: 'Yes' },
       }],
     });
@@ -131,13 +131,11 @@ exports.getFormDetails = async (formName) => {
       .filter(detail => detail.search_flag === 'Yes')
       .map(detail => detail.column_name);
 
-    // Extract all active columns
-    const allActiveColumns = formMaster.FormDetails.map(detail => detail.column_name);
-
-    // Extract form details with required flag and lov_sql_convert_out
-    const formDetailsWithFlags = formMaster.FormDetails.map(detail => ({
+    // Extract all relevant form details including column name, input type, required flag, and lov_sql_convert_out
+    const allActiveColumns = formMaster.FormDetails.map(detail => ({
       columnName: detail.column_name,
-      isRequired: detail.required_flag === 'Yes',
+      inputType: detail.input_type,        // Include input type for each column
+      isRequired: detail.required_flag === 'Yes', // Check if the field is required
       lovSqlConvertOut: detail.lov_sql_convert_out || null, // Include lov_sql_convert_out if present
     }));
 
@@ -145,7 +143,6 @@ exports.getFormDetails = async (formName) => {
       primaryKeyColumn: primaryKeyColumn.column_name,
       searchableColumns,
       allActiveColumns,
-      formDetailsWithFlags,
     };
   } catch (error) {
     console.error('Error fetching comprehensive form details:', error);

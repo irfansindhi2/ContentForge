@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchFormDetails, fetchInformation, submitForm } from '../services/formService';
-import { formatDate } from '../utils/dateUtils';
+import { formatDate } from '../utils/utils';
 
 /**
  * Custom hook that manages form logic including state, fetching data, and submission.
@@ -79,20 +79,17 @@ export const useFormLogic = () => {
     const { name, value, files } = e.target;
   
     if (e.target.type === 'file') {
-      // Handle file input by storing the selected file in formValues
-      setFormValues((prevValues) => ({
-        ...prevValues,
-        [name]: files[0],
-      }));
-    } else {
-      // Handle other inputs by updating the corresponding value in formValues
-      setFormValues((prevValues) => {
-        const updatedValues = {
+      if (files[0]) {
+        setFormValues(prevValues => ({
           ...prevValues,
-          [name]: value, // Update the field value
-        };
-        return updatedValues; // Return the updated values
-      });
+          [name]: files[0]  // Store the file object instead of just the name
+        }));
+      }
+    } else {
+      setFormValues(prevValues => ({
+        ...prevValues,
+        [name]: value,
+      }));
     }
   };
 
@@ -106,11 +103,21 @@ export const useFormLogic = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Exclude `formName` from `formValues` before submission
       const { formName, ...filteredValues } = formValues;
-
-      // Submit the filtered values, excluding `formName`
-      await submitForm({ formValues: filteredValues, formName, id, navigate });
+  
+      // Create a FormData object to send both text data and files
+      const formData = new FormData();
+      Object.keys(filteredValues).forEach(key => {
+        if (filteredValues[key] instanceof File) {
+          formData.append(key, filteredValues[key]);
+        } else {
+          formData.append(key, filteredValues[key]);
+        }
+      });
+  
+      console.log('Form data being sent:', Object.fromEntries(formData));
+  
+      await submitForm({ formData, formName, id, navigate });
     } catch (error) {
       console.error('Error submitting form:', error);
       throw new Error('Failed to submit form');

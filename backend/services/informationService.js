@@ -1,7 +1,7 @@
 const { sequelize } = require('../models');
 const formService = require('./formService');
 const listService = require('./listService')
-const { formatDatesInJson } = require('../utils/dateUtils');
+const { uploadFileToR2, formatDatesInJson,  generateImageFilename } = require('../utils/utils');
 const formValidator = require('../validators/formValidator');
 
 
@@ -115,7 +115,7 @@ exports.getInformationByPrimaryKeyAndWebsite = async (listName, id, websiteId) =
 
     // Construct the SQL query
     const query = `
-      SELECT ${allActiveColumns.join(', ')}
+      SELECT ${allActiveColumns.map(col => col.columnName).join(', ')}
       FROM ${table_name}
       WHERE ${primaryKeyColumn} = :id AND website_id = :websiteId ${where_clause ? `AND ${where_clause}` : ''}
     `;
@@ -149,7 +149,7 @@ exports.getInformationByPrimaryKeyAndWebsite = async (listName, id, websiteId) =
  * @returns {Promise<Object>} - The newly created information record.
  * @throws {Error} - If an error occurs during the creation.
  */
-exports.createInformation = async (listName, websiteId, data) => {
+exports.createInformation = async (listName, websiteId, data, files) => {
   try {
     console.log('Creating information for website ID:', websiteId);
 
@@ -157,16 +157,16 @@ exports.createInformation = async (listName, websiteId, data) => {
     const { table_name, where_clause, form_name } = await listService.getTableDetailsWithColumns(listName);
 
     // Get comprehensive form details including primary key and all columns
-    const { primaryKeyColumn, allActiveColumns, formDetailsWithFlags } = await formService.getFormDetails(form_name);
+    const { primaryKeyColumn, allActiveColumns } = await formService.getFormDetails(form_name);
 
     // Validate required fields using the validator
-    formValidator.validateRequiredFields(formDetailsWithFlags, data);
+    formValidator.validateRequiredFields(allActiveColumns, data);
 
     // Format any date fields in the data object
-    data = formatDatesInJson(data);
+    data = formatDatesInJson(data, allActiveColumns);
 
     // Process each column in formDetails that has a lov_sql_convert_out
-    for (const detail of formDetailsWithFlags) {
+    for (const detail of allActiveColumns) {
       if (detail.lovSqlConvertOut) {
         // Dynamically determine the last parameter to pass
         const lastParameterName = extractLastParameter(detail.lovSqlConvertOut);
@@ -188,7 +188,46 @@ exports.createInformation = async (listName, websiteId, data) => {
       }
     }
 
+    // Dynamically handle file uploads and modify data accordingly
+    if (files) {
+      for (const file of files) {
+        const fieldName = file.fieldname;
+        const filename = generateImageFilename(file.originalname);
+        const fileResult = await uploadFileToR2('cfimran-com', file.buffer, filename);
+        console.log(`Upload successful: ${fileResult.ETag}`);
+
+        data[fieldName + '_location'] = filename;  // Save filename in the corresponding '_location' field
+      }
+    }
+
+    // Construct the insert data including all necessary fields
+    // Filter out undefined, null values, and handle integer fields dynamically
+    const insertData = allActiveColumns.reduce((acc, column) => {
+      let value = data[column.columnName];
+      if (value !== undefined && value !== null) {
+        // Check if the value is a string and empty, handle it as per column's requirements
+        if (typeof value === 'string') {
+          if (value.trim() === '') {
+            // Convert empty strings to null or skip based on your DB schema requirements
+            value = null; // Assuming your DB allows null for this column
+          } else if (!isNaN(value) && value.trim() !== '') {
+            // Convert strings that are valid numbers to integers
+            value = parseInt(value, 10);
+          }
+        }
+        acc[column.columnName] = value;
+      }
+      return acc;
+    }, {});
+
     console.log('Data after lov_sql_convert_out processing:', data);
+
+    // Explicitly check and add file location fields that might not be in allActiveColumns
+    Object.keys(data).forEach(key => {
+      if (key.endsWith('_location') && data[key] !== undefined && data[key] !== null) {
+        insertData[key] = data[key];  // Ensure file location fields are included
+      }
+    });
 
     // Fetch the maximum primary key value for the given website ID
     const maxResult = await sequelize.query(
@@ -207,18 +246,8 @@ exports.createInformation = async (listName, websiteId, data) => {
     console.log('New Primary Key Value:', newPrimaryKeyValue);
 
     // Set the new primary key and website ID in the data object
-    data[primaryKeyColumn] = newPrimaryKeyValue;
-    data.website_id = websiteId;
-
-    // Filter out undefined or null values, but always include website_id and primaryKeyColumn
-    const insertData = allActiveColumns.reduce((acc, column) => {
-      if (data[column] !== undefined && data[column] !== null) {
-        acc[column] = data[column];
-      }
-      return acc;
-    }, {});
-    insertData.website_id = websiteId;
     insertData[primaryKeyColumn] = newPrimaryKeyValue;
+    insertData.website_id = websiteId;
 
     console.log('Insert Data:', insertData);
 
@@ -282,7 +311,7 @@ exports.createInformation = async (listName, websiteId, data) => {
  * @returns {Promise<Object>} - The result of the update operation.
  * @throws {Error} - If an error occurs during the update.
  */
-exports.updateInformation = async (listName, id, websiteId, data) => {
+exports.updateInformation = async (listName, id, websiteId, data, files) => {
   try {
     console.log('Updating information for website ID:', websiteId, 'and ID:', id);
 
@@ -290,16 +319,16 @@ exports.updateInformation = async (listName, id, websiteId, data) => {
     const { table_name, where_clause, form_name } = await listService.getTableDetailsWithColumns(listName);
 
     // Get comprehensive form details including primary key and all columns
-    const { primaryKeyColumn, allActiveColumns, formDetailsWithFlags } = await formService.getFormDetails(form_name);
+    const { primaryKeyColumn, allActiveColumns } = await formService.getFormDetails(form_name);
 
     // Validate required fields using the validator
-    formValidator.validateRequiredFields(formDetailsWithFlags, data);
+    formValidator.validateRequiredFields(allActiveColumns, data);
 
     // Format any date fields in the data object
-    data = formatDatesInJson(data);
+    data = formatDatesInJson(data, allActiveColumns);
 
     // Process each column in formDetails that has a lov_sql_convert_out
-    for (const detail of formDetailsWithFlags) {
+    for (const detail of allActiveColumns) {
       if (detail.lovSqlConvertOut) {
         const lastParameterName = extractLastParameter(detail.lovSqlConvertOut);
         const replacementValue = data[lastParameterName];
@@ -320,17 +349,48 @@ exports.updateInformation = async (listName, id, websiteId, data) => {
       }
     }
 
+    // Dynamically handle file uploads and modify data accordingly
+    if (files) {
+      for (const file of files) {
+        const fieldName = file.fieldname;
+        const filename = generateImageFilename(file.originalname);
+        const fileResult = await uploadFileToR2('cfimran-com', file.buffer, filename);
+        console.log(`Upload successful: ${fileResult.ETag}`);
+
+        data[fieldName + '_location'] = filename;  // Save filename in the corresponding '_location' field
+      }
+    }
+
     console.log('Data after lov_sql_convert_out processing:', data);
 
-    // Filter out undefined or null values, and only include columns that are in allActiveColumns
+    // Filter out undefined, null values, and handle integer fields dynamically
     const updateData = allActiveColumns.reduce((acc, column) => {
-      if (data[column] !== undefined && data[column] !== null) {
-        acc[column] = data[column];
+      let value = data[column.columnName];
+      if (value !== undefined && value !== null) {
+        // Check if the value is a string and empty, handle it as per column's requirements
+        if (typeof value === 'string') {
+          if (value.trim() === '') {
+            // Convert empty strings to null or skip based on your DB schema requirements
+            value = null; // Assuming your DB allows null for this column
+          } else if (!isNaN(value) && value.trim() !== '') {
+            // Convert strings that are valid numbers to integers
+            value = parseInt(value, 10);
+          }
+        }
+        acc[column.columnName] = value;
       }
       return acc;
     }, {});
 
-    console.log('Update Data:', updateData);
+    // Explicitly check and add file location fields that might not be in allActiveColumns
+    Object.keys(data).forEach(key => {
+      if (key.endsWith('_location') && data[key] !== undefined && data[key] !== null) {
+        updateData[key] = data[key];  // This ensures file location fields are always updated
+      }
+    })
+
+    // Remove primary key column from the update data
+    delete updateData[primaryKeyColumn];
 
     // Construct the SQL query for updating the record
     const setClause = Object.keys(updateData).map((key) => `${key} = :${key}`).join(', ');

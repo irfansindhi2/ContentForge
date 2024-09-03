@@ -1,5 +1,5 @@
 import React from 'react';
-import { parseLovStatic } from '../../utils/parseUtils';
+import { parseLovStatic } from '../../utils/utils';
 
 
 /**
@@ -35,15 +35,30 @@ function FormField({ detail, value, handleInputChange }) {
           required={detail.required_flag === 'Yes'}
           style={{ width: detail.column_width_data || '300px' }}
         >
-        {options.map((option, index) => (
+          {options.map((option, index) => (
             <option key={index} value={option}>
-                {option}
+              {option}
             </option>
-        ))}
+          ))}
         </select>
+      ) : detail.input_type === 'OLE' ? (
+        <>
+          <input
+            type="file"
+            name={detail.column_name}
+            onChange={handleInputChange}
+            required={detail.required_flag === 'Yes'}
+            style={{ width: detail.column_width_data || '300px' }}
+          />
+          {value && !(value instanceof File) && (
+            <span style={{ marginLeft: '10px' }}>
+              Current file: {value}
+            </span>
+          )}
+        </>
       ) : (
         <input
-          type={detail.input_type === 'OLE' ? 'file' : detail.input_type.toLowerCase()}
+          type={detail.input_type.toLowerCase()}
           name={detail.column_name}
           value={selectedValue}
           onChange={handleInputChange}

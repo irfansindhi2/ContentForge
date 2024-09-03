@@ -1,5 +1,9 @@
 const informationService = require('../services/informationService');
+const multer = require('multer');
 
+// Set up multer for memory storage
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage }).any();
 
 /**
  * Controller to fetch a list of information records by website ID with sorting options.
@@ -85,32 +89,29 @@ exports.getInformationByPrimaryKeyAndWebsite = async (req, res) => {
  * @param {Object} res - The response object.
  * @returns {Promise<void>} - Sends a JSON response with the created information.
  */
-exports.createInformation = async (req, res) => {
-  const { listName } = req.params; // Extract listName from the URL parameters
-
-  try {
-    // Retrieve the website ID from the session
+exports.createInformation = [
+  upload,
+  async (req, res) => {
+    const { listName } = req.params; // Extract listName from the URL parameters
     const websiteId = req.session.user?.website_id;
+    try {
+      // Check if the website ID is present in the session
+      if (!websiteId) {
+        return res.status(400).json({ error: 'Website ID not found in session.' });
+      }
 
-    // Check if the website ID is present in the session
-    if (!websiteId) {
-      return res.status(400).json({ error: 'Website ID not found in session.' });
+      // Create the new information entry using the service layer
+      const newInformation = await informationService.createInformation(listName, websiteId, req.body, req.files);
+
+      // Send a successful response with the created information
+      res.status(201).json(newInformation);
+    } catch (error) {
+      // Log the error and send a 500 response if something goes wrong
+      console.error('Error creating information:', error);
+      res.status(500).json({ error: 'Failed to create information' });
     }
-
-    // Get the data from the request body to create the new record
-    const data = req.body;
-
-    // Create the new information entry using the service layer
-    const newInformation = await informationService.createInformation(listName, websiteId, data);
-
-    // Send a successful response with the created information
-    res.status(201).json(newInformation);
-  } catch (error) {
-    // Log the error and send a 500 response if something goes wrong
-    console.error('Error creating information:', error);
-    res.status(500).json({ error: 'Failed to create information' });
   }
-};
+];
 
 
 /**
@@ -120,28 +121,35 @@ exports.createInformation = async (req, res) => {
  * @param {Object} res - The response object.
  * @returns {Promise<void>} - Sends a JSON response with the update result.
  */
-exports.updateInformation = async (req, res) => {
-  const { id, listName } = req.params; // Extract the primary key ID and listName from the URL parameters
-  const websiteId = req.session.user?.website_id; // Get the website ID from the session
-  const data = req.body; // Get the data to update from the request body
+exports.updateInformation = [
+  upload,
+  async (req, res) => {
+    const { id, listName } = req.params;
+    const websiteId = req.session.user?.website_id;
 
-  try {
-    // Check if the website ID is present in the session
-    if (!websiteId) {
-      return res.status(400).json({ error: 'Website ID not found in session.' });
+    console.log('Received update request:');
+    console.log('ID:', id);
+    console.log('List Name:', listName);
+    console.log('Website ID:', websiteId);
+    console.log('Body:', req.body);
+    console.log('Files:', req.files);
+
+    try {
+      if (!websiteId) {
+        return res.status(400).json({ error: 'Website ID not found in session.' });
+      }
+
+      // Update the information entry using the service layer
+      const updatedInformation = await informationService.updateInformation(listName, id, websiteId, req.body, req.files);
+
+      // Send a successful response with the result of the update
+      res.json(updatedInformation);
+    } catch (error) {
+      console.error('Error updating information:', error);
+      res.status(500).json({ error: 'Failed to update information: ' + error.message });
     }
-
-    // Update the information entry using the service layer
-    const updatedInformation = await informationService.updateInformation(listName, id, websiteId, data);
-
-    // Send a successful response with the result of the update
-    res.json(updatedInformation);
-  } catch (error) {
-    // Log the error and send a 500 response if something goes wrong
-    console.error('Error updating information:', error);
-    res.status(500).json({ error: 'Failed to update information' });
   }
-};
+];
 
 
 /**
