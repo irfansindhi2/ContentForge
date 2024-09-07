@@ -15,16 +15,22 @@ const formValidator = require('../validators/formValidator');
  * @returns {Promise<Object>} - An object containing the count of records and the retrieved information rows.
  * @throws {Error} - If any error occurs during retrieval.
  */
-exports.getInformationListByWebsite = async (listName, websiteId, limit = 12, offset = 0, sortOptions = {}, searchConditions = {}) => {
-  try {
+exports.getInformationListByWebsite = async (
+  listName, 
+  websiteId, 
+  limit = 12, 
+  offset = 0, 
+  sortOptions = {}, 
+  searchConditions = {},
+  parentColumn,
+  parentValue
+) => {
+    try {
     // Get the table name, where clause, order by clause, and actual form name from ListMaster
     const { table_name, where_clause, order_by, form_name, columns } = await listService.getTableDetailsWithColumns(listName);
 
-    // Use the actual form_name retrieved from ListMaster instead of the inputFormName
-    const formName = form_name;
-
     // Get the primary key column name and rest of the columns for the given form
-    const { primaryKeyColumn, searchableColumns } = await formService.getFormDetails(formName);
+    const { primaryKeyColumn, searchableColumns } = await formService.getFormDetails(form_name);
 
     // Build the WHERE clause for search conditions
     const { whereClause: searchWhereClause, replacements: searchReplacements } = buildWhereClause(searchConditions, searchableColumns);
@@ -48,7 +54,18 @@ exports.getInformationListByWebsite = async (listName, websiteId, limit = 12, of
     }
 
     // Combine the where clause with search conditions and where_clause from listService
-    const finalWhereClause = `website_id = :websiteId ${where_clause ? `AND ${where_clause}` : ''} ${searchWhereClause}`;
+    let finalWhereClause = `website_id = :websiteId ${where_clause ? `AND ${where_clause}` : ''} ${searchWhereClause}`;
+
+    const allReplacements = {
+      websiteId,
+      ...searchReplacements
+    };
+
+    // Add parent column condition if provided
+    if (parentColumn && parentValue !== undefined) {
+      finalWhereClause += ` AND ${parentColumn} = :parentValue`;
+      allReplacements.parentValue = parentValue;
+    }
 
     // ** Count Query **
     const countQuery = `
@@ -61,7 +78,7 @@ exports.getInformationListByWebsite = async (listName, websiteId, limit = 12, of
     const countResult = await sequelize.query(countQuery, {
       replacements: {
         websiteId,
-        ...searchReplacements
+        ...allReplacements
       },
       type: sequelize.QueryTypes.SELECT,
     });
@@ -82,7 +99,7 @@ exports.getInformationListByWebsite = async (listName, websiteId, limit = 12, of
         websiteId,
         limit,
         offset,
-        ...searchReplacements
+        ...allReplacements
       },
       type: sequelize.QueryTypes.SELECT,
     });

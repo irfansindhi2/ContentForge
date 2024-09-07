@@ -14,6 +14,7 @@ const upload = multer({ storage: storage }).any();
  */
 exports.getInformationListByWebsite = async (req, res) => {
   const { listName } = req.params; // Extract listName from the URL parameters
+  const { parentColumn, parentValue } = req.body;
   const limit = parseInt(req.body.limit, 10) || 12;  // Set the limit of records, defaulting to 12 if not provided
   const offset = parseInt(req.body.offset, 10) || 0; // Set the offset for pagination, defaulting to 0
 
@@ -33,17 +34,25 @@ exports.getInformationListByWebsite = async (req, res) => {
     const searchConditions = req.body.searchConditions || {};
 
     // Fetch the list of information from the service layer with sorting options
-    const { count, rows } = await informationService.getInformationListByWebsite(
+    const { count, primaryKeyColumn, rows } = await informationService.getInformationListByWebsite(
       listName, 
       websiteId, 
       limit, 
       offset, 
       sortOptions,
-      searchConditions
+      searchConditions,
+      parentColumn,
+      parentValue
     );
 
     // Send a successful response with the total count and the data rows
-    res.status(200).json({ total: count, data: rows });
+    res.status(200).json({ 
+      total: count, 
+      data: rows,
+      primaryKeyColumn,
+      limit,
+      offset,
+    });
   } catch (error) {
     // Log the error and send a 500 response if something goes wrong
     console.error('Error fetching information list:', error);
