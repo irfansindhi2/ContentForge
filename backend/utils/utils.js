@@ -1,5 +1,5 @@
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
-const fs = require('fs');
+const fs = require('fs').promises;
 const moment = require('moment');
 const path = require('path');
 const sharp = require('sharp');
@@ -132,4 +132,34 @@ function generateImageFilename(originalFilename) {
     return `${formattedDate}-${randomNum}${ext}`;
 }
 
-module.exports = { uploadFileToR2, formatDatesInJson, generateImageFilename };
+async function generateHighlightLayout(layout, data, tableName) {
+    let content = layout;
+  
+    // Replace placeholders with actual values
+    Object.entries(data).forEach(([columnName, value]) => {
+        const placeholder = new RegExp(`{{${columnName}}}`, 'g');
+        content = content.replace(placeholder, value || ''); // Replace with value or empty string if null/undefined
+    });
+
+    // Remove any remaining {{RepeatBegin}} and {{RepeatEnd}} tags
+    content = content.replace(/{{RepeatBegin}}/g, '').replace(/{{RepeatEnd}}/g, '');
+
+    // Generate a unique filename
+    const filename = `${tableName}_${Date.now()}.html`;
+    const filePath = path.join(__dirname, '..', '..', 'public', 'layouts', filename);
+  
+    try {
+        // Ensure the directory exists
+        await fs.mkdir(path.dirname(filePath), { recursive: true });
+  
+        // Write the content to the file
+        await fs.writeFile(filePath, content, 'utf8');
+  
+        console.log(`Highlight layout generated: ${filename}`);
+    } catch (error) {
+        console.error('Error generating highlight layout:', error);
+        throw error;
+    }
+}
+
+module.exports = { uploadFileToR2, formatDatesInJson, generateImageFilename, generateHighlightLayout };

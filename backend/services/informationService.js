@@ -1,7 +1,7 @@
 const { sequelize } = require('../models');
 const formService = require('./formService');
 const listService = require('./listService')
-const { uploadFileToR2, formatDatesInJson,  generateImageFilename } = require('../utils/utils');
+const { uploadFileToR2, formatDatesInJson,  generateImageFilename, generateHighlightLayout } = require('../utils/utils');
 const formValidator = require('../validators/formValidator');
 
 
@@ -437,6 +437,26 @@ exports.updateInformation = async (listName, id, websiteId, data, files) => {
         message: 'Record not found or no changes were made',
         statusCode: 404
       };
+    }
+
+    // Fetch the highlight layout
+    const [highlightLayoutResult] = await sequelize.query(
+      'SELECT highlight_layout FROM sys_options_systems WHERE website_id = :websiteId',
+      {
+        replacements: { websiteId },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    if (highlightLayoutResult && highlightLayoutResult.highlight_layout) {
+      try {
+        // Pass the original data object, not the updateData
+        await generateHighlightLayout(highlightLayoutResult.highlight_layout, data, table_name);
+      } catch (error) {
+        console.error('Error generating highlight layout:', error);
+        // Decide whether to throw the error or continue with the update
+        // For now, we'll log the error but continue with the update
+      }
     }
 
     return {
