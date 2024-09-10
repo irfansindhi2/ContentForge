@@ -4,8 +4,8 @@ import Responsibilities from './pages/Responsibilities';
 import Form from './components/Form/Form';
 import List from './components/List/List';
 import Login from './pages/Login';
-import BuildLayout from './components/BuildLayout';
 import SearchPage from './components/List/SearchPage';
+import WebsiteBuilder from './components/WebsiteBuilder/WebsiteBuilder';
 
 function App() {
   return (
@@ -16,7 +16,7 @@ function App() {
         <Route path="/list/:listName" element={<List />} /> 
         <Route path="/search/:listName" element={<SearchPage />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/buildlayout/:id" element={<BuildLayout />} />
+        <Route path="/website-builder" element={<WebsiteBuilder />} />
       </Routes>
     </Router>
   );
