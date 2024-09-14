@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './HeaderWidget.css';
-import useFormPosition from './useFormPosition'; // Import the new hook
+import useFormPosition from './useFormPosition';
+import { FaEdit, FaPalette, FaTrash, FaTimes } from 'react-icons/fa'; // Import icons
 
 function HeaderWidget({
   id,
@@ -14,7 +15,7 @@ function HeaderWidget({
 }) {
   const widgetRef = useRef(null);
   const formRef = useRef(null);
-  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [activeForm, setActiveForm] = useState(null);
 
   // Use the custom hook
   const { formTransform, formTop } = useFormPosition(widgetRef, formRef, isEditing, draggedPosition, id);
@@ -25,6 +26,7 @@ function HeaderWidget({
     backgroundColor: '#f8f9fa',
     textColor: '#333333',
     alignment: 'center',
+    fontSize: '16px', // Add default font size
   };
 
   const currentContent = { ...defaultContent, ...content };
@@ -38,14 +40,15 @@ function HeaderWidget({
     setIsEditing(true);
   };
 
-  useEffect(() => {
-    if (isEditing) {
-      setIsFormVisible(true);
-    } else {
-      const timer = setTimeout(() => setIsFormVisible(false), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [isEditing]);
+  const handleIconClick = (formType) => {
+    setIsEditing(true);
+    setActiveForm(formType);
+  };
+
+  const closeForm = () => {
+    setIsEditing(false);
+    setActiveForm(null);
+  };
 
   return (
     <div ref={widgetRef} className="header-widget">
@@ -55,6 +58,7 @@ function HeaderWidget({
           backgroundColor: currentContent.backgroundColor,
           color: currentContent.textColor,
           textAlign: currentContent.alignment,
+          fontSize: currentContent.fontSize, // Apply font size
         }}
         onClick={handleClick}
         onContextMenu={onContextMenu}
@@ -62,71 +66,76 @@ function HeaderWidget({
         <h1>{currentContent.title}</h1>
         <p>{currentContent.subtitle}</p>
       </div>
-      {isFormVisible && (
+      {isEditing && (
         <div
           ref={formRef}
-          className={`widget-edit-overlay ${isEditing ? 'active' : ''}`}
+          className="widget-edit-overlay active"
           style={{ transform: formTransform, top: formTop }}
           onClick={(e) => e.stopPropagation()}
         >
-          <h2>Edit Header</h2>
-          {/* Form fields */}
-          <div className="form-group">
-            <label htmlFor={`title-${id}`}>Title</label>
-            <input
-              id={`title-${id}`}
-              type="text"
-              value={currentContent.title}
-              onChange={(e) => handleChange('title', e.target.value)}
-              placeholder="Header Title"
-            />
+          <div className="widget-icons">
+            <FaEdit onClick={() => handleIconClick('text')} />
+            <FaPalette onClick={() => handleIconClick('color')} />
+            <FaTrash onClick={() => onDelete(id)} />
+            {activeForm && <FaTimes onClick={closeForm} />}
           </div>
-          {/* Additional form fields */}
-          <div className="form-group">
-            <label htmlFor={`subtitle-${id}`}>Subtitle</label>
-            <input
-              id={`subtitle-${id}`}
-              type="text"
-              value={currentContent.subtitle}
-              onChange={(e) => handleChange('subtitle', e.target.value)}
-              placeholder="Header Subtitle"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor={`bgColor-${id}`}>Background Color</label>
-            <input
-              id={`bgColor-${id}`}
-              type="color"
-              value={currentContent.backgroundColor}
-              onChange={(e) => handleChange('backgroundColor', e.target.value)}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor={`textColor-${id}`}>Text Color</label>
-            <input
-              id={`textColor-${id}`}
-              type="color"
-              value={currentContent.textColor}
-              onChange={(e) => handleChange('textColor', e.target.value)}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor={`alignment-${id}`}>Alignment</label>
-            <select
-              id={`alignment-${id}`}
-              value={currentContent.alignment}
-              onChange={(e) => handleChange('alignment', e.target.value)}
-            >
-              <option value="left">Left</option>
-              <option value="center">Center</option>
-              <option value="right">Right</option>
-            </select>
-          </div>
-          {/* Form actions */}
-          <div className="form-actions">
-            <button onClick={() => setIsEditing(false)}>Done</button>
-            <button onClick={() => onDelete(id)}>Delete</button>
-          </div>
+          {activeForm && (
+            <div className="widget-form active">
+              <h2>Edit Header</h2>
+              {activeForm === 'text' && (
+                <>
+                  <div className="form-group">
+                    <label htmlFor={`title-${id}`}>Title</label>
+                    <input
+                      id={`title-${id}`}
+                      type="text"
+                      value={currentContent.title}
+                      onChange={(e) => handleChange('title', e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor={`subtitle-${id}`}>Subtitle</label>
+                    <input
+                      id={`subtitle-${id}`}
+                      type="text"
+                      value={currentContent.subtitle}
+                      onChange={(e) => handleChange('subtitle', e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor={`fontSize-${id}`}>Font Size</label>
+                    <input
+                      id={`fontSize-${id}`}
+                      type="text"
+                      value={currentContent.fontSize}
+                      onChange={(e) => handleChange('fontSize', e.target.value)}
+                      placeholder="e.g., 16px, 1.2em, 1.5rem"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor={`textColor-${id}`}>Text Color</label>
+                    <input
+                      id={`textColor-${id}`}
+                      type="color"
+                      value={currentContent.textColor}
+                      onChange={(e) => handleChange('textColor', e.target.value)}
+                    />
+                  </div>
+                </>
+              )}
+              {activeForm === 'color' && (
+                <div className="form-group">
+                  <label htmlFor={`bgColor-${id}`}>Background Color</label>
+                  <input
+                    id={`bgColor-${id}`}
+                    type="color"
+                    value={currentContent.backgroundColor}
+                    onChange={(e) => handleChange('backgroundColor', e.target.value)}
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
