@@ -1,10 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
-import './HeaderWidget.css'; // We'll create this file for custom styles
+import './HeaderWidget.css';
 
-function HeaderWidget({ id, content, onUpdate, onDelete, isEditing, setIsEditing, onContextMenu, draggedPosition }) {
+function HeaderWidget({
+  id,
+  content,
+  onUpdate,
+  onDelete,
+  isEditing,
+  setIsEditing,
+  onContextMenu,
+  draggedPosition,
+}) {
   const widgetRef = useRef(null);
   const formRef = useRef(null);
-  const [formPosition, setFormPosition] = useState('bottom');
+  const [formTransform, setFormTransform] = useState('translateY(0)');
+  const [formTop, setFormTop] = useState('100%'); // Default to below
+  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [formPosition, setFormPosition] = useState('below'); // 'above' or 'below'
 
   const defaultContent = {
     title: 'Welcome to Our Website',
@@ -25,78 +37,67 @@ function HeaderWidget({ id, content, onUpdate, onDelete, isEditing, setIsEditing
     setIsEditing(true);
   };
 
-  function getTranslateValues(element) {
-    const style = window.getComputedStyle(element);
-    const transform = style.transform;
-  
-    if (!transform || transform === 'none') {
-      return { x: 0, y: 0 };
-    }
-  
-    let matrixValues;
-  
-    if (transform.startsWith('matrix3d(')) {
-      // 3D matrix
-      matrixValues = transform.match(/^matrix3d\((.+)\)$/)[1].split(', ');
-      return {
-        x: parseFloat(matrixValues[12]),
-        y: parseFloat(matrixValues[13]),
-      };
-    } else if (transform.startsWith('matrix(')) {
-      // 2D matrix
-      matrixValues = transform.match(/^matrix\((.+)\)$/)[1].split(', ');
-      return {
-        x: parseFloat(matrixValues[4]),
-        y: parseFloat(matrixValues[5]),
-      };
-    }
-  
-    return { x: 0, y: 0 };
-  }
-  
   const updateFormPosition = () => {
     if (formRef.current && widgetRef.current) {
       const widgetRect = widgetRef.current.getBoundingClientRect();
-      const formRect = formRef.current.getBoundingClientRect();
+      const formHeight = formRef.current.offsetHeight;
       const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-  
+
       const spaceAbove = widgetRect.top;
       const spaceBelow = viewportHeight - widgetRect.bottom;
-  
-      // If the form is currently at the bottom
-      if (formPosition === 'bottom') {
-        // Only move it to top if there's not enough space below
-        if (spaceBelow < formRect.height && spaceAbove >= formRect.height) {
-          setFormPosition('top');
+
+      const buffer = 20; // pixels, to prevent frequent flipping
+
+      // Decide whether to position form above or below, change only if necessary
+      if (formPosition === 'below') {
+        if (spaceBelow < formHeight + buffer && spaceAbove >= formHeight + buffer) {
+          // Switch to above
+          setFormPosition('above');
+          setFormTop('0');
+          setFormTransform('translateY(-100%)');
+        }
+      } else if (formPosition === 'above') {
+        if (spaceAbove < formHeight + buffer && spaceBelow >= formHeight + buffer) {
+          // Switch to below
+          setFormPosition('below');
+          setFormTop('100%');
+          setFormTransform('translateY(0)');
         }
       } else {
-        // If the form is currently at the top
-        // Only move it to bottom if there's not enough space above
-        if (spaceAbove < formRect.height && spaceBelow >= formRect.height) {
-          setFormPosition('bottom');
+        // Initial positioning
+        if (spaceBelow >= formHeight + buffer) {
+          setFormPosition('below');
+          setFormTop('100%');
+          setFormTransform('translateY(0)');
+        } else if (spaceAbove >= formHeight + buffer) {
+          setFormPosition('above');
+          setFormTop('0');
+          setFormTransform('translateY(-100%)');
+        } else {
+          // Default to below
+          setFormPosition('below');
+          setFormTop('100%');
+          setFormTransform('translateY(0)');
         }
       }
     }
   };
-  
-  
 
   useEffect(() => {
     if (isEditing) {
-      const handleDrag = () => {
+      updateFormPosition();
+
+      const handleWindowResize = () => {
         updateFormPosition();
       };
-      window.addEventListener('scroll', handleDrag);
-      window.addEventListener('resize', handleDrag);
-      window.addEventListener('mousemove', handleDrag);
+
+      window.addEventListener('resize', handleWindowResize);
+
       return () => {
-        window.removeEventListener('scroll', handleDrag);
-        window.removeEventListener('resize', handleDrag);
-        window.removeEventListener('mousemove', handleDrag);
+        window.removeEventListener('resize', handleWindowResize);
       };
     }
-  }, [isEditing, formPosition]);
-  
+  }, [isEditing]);
 
   useEffect(() => {
     if (draggedPosition && draggedPosition.id === id) {
@@ -105,29 +106,19 @@ function HeaderWidget({ id, content, onUpdate, onDelete, isEditing, setIsEditing
   }, [draggedPosition]);
 
   useEffect(() => {
-    updateFormPosition();
-  }, [content, isEditing]);
-
-  useEffect(() => {
     if (isEditing) {
-      const handleDrag = () => {
-        requestAnimationFrame(updateFormPosition);
-      };
-      window.addEventListener('mousemove', handleDrag);
-      return () => {
-        window.removeEventListener('mousemove', handleDrag);
-      };
+      setIsFormVisible(true);
+    } else {
+      const timer = setTimeout(() => setIsFormVisible(false), 300);
+      return () => clearTimeout(timer);
     }
   }, [isEditing]);
 
   return (
-    <div 
-      ref={widgetRef} 
-      className="header-widget"
-    >
-      <div 
+    <div ref={widgetRef} className="header-widget">
+      <div
         className="header-content"
-        style={{ 
+        style={{
           backgroundColor: currentContent.backgroundColor,
           color: currentContent.textColor,
           textAlign: currentContent.alignment,
@@ -138,27 +129,30 @@ function HeaderWidget({ id, content, onUpdate, onDelete, isEditing, setIsEditing
         <h1>{currentContent.title}</h1>
         <p>{currentContent.subtitle}</p>
       </div>
-      {isEditing && (
-        <div 
+      {isFormVisible && (
+        <div
           ref={formRef}
-          className={`widget-edit-overlay ${formPosition}`}
+          className={`widget-edit-overlay ${isEditing ? 'active' : ''}`}
+          style={{ transform: formTransform, top: formTop }}
           onClick={(e) => e.stopPropagation()}
         >
           <h2>Edit Header</h2>
+          {/* Form fields */}
           <div className="form-group">
-            <label htmlFor="title">Title</label>
+            <label htmlFor={`title-${id}`}>Title</label>
             <input
-              id="title"
+              id={`title-${id}`}
               type="text"
               value={currentContent.title}
               onChange={(e) => handleChange('title', e.target.value)}
               placeholder="Header Title"
             />
           </div>
+          {/* Additional form fields */}
           <div className="form-group">
-            <label htmlFor="subtitle">Subtitle</label>
+            <label htmlFor={`subtitle-${id}`}>Subtitle</label>
             <input
-              id="subtitle"
+              id={`subtitle-${id}`}
               type="text"
               value={currentContent.subtitle}
               onChange={(e) => handleChange('subtitle', e.target.value)}
@@ -166,27 +160,27 @@ function HeaderWidget({ id, content, onUpdate, onDelete, isEditing, setIsEditing
             />
           </div>
           <div className="form-group">
-            <label htmlFor="bgColor">Background Color</label>
+            <label htmlFor={`bgColor-${id}`}>Background Color</label>
             <input
-              id="bgColor"
+              id={`bgColor-${id}`}
               type="color"
               value={currentContent.backgroundColor}
               onChange={(e) => handleChange('backgroundColor', e.target.value)}
             />
           </div>
           <div className="form-group">
-            <label htmlFor="textColor">Text Color</label>
+            <label htmlFor={`textColor-${id}`}>Text Color</label>
             <input
-              id="textColor"
+              id={`textColor-${id}`}
               type="color"
               value={currentContent.textColor}
               onChange={(e) => handleChange('textColor', e.target.value)}
             />
           </div>
           <div className="form-group">
-            <label htmlFor="alignment">Alignment</label>
+            <label htmlFor={`alignment-${id}`}>Alignment</label>
             <select
-              id="alignment"
+              id={`alignment-${id}`}
               value={currentContent.alignment}
               onChange={(e) => handleChange('alignment', e.target.value)}
             >
@@ -195,6 +189,7 @@ function HeaderWidget({ id, content, onUpdate, onDelete, isEditing, setIsEditing
               <option value="right">Right</option>
             </select>
           </div>
+          {/* Form actions */}
           <div className="form-actions">
             <button onClick={() => setIsEditing(false)}>Done</button>
             <button onClick={() => onDelete(id)}>Delete</button>
