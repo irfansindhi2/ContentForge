@@ -31,12 +31,14 @@
     background-color: #fff;
     display: flex;
     flex-direction: column;
+    touch-action: none;
 }
 
 .react-grid-item .widget {
     width: 100%;
     height: 100%;
-    overflow: auto;
+    overflow: hidden;
+    touch-action: none;
 }
 
 .react-grid-item.react-grid-placeholder {
