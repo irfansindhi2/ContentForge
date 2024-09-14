@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './HeaderWidget.css';
+import useFormPosition from './useFormPosition'; // Import the new hook
 
 function HeaderWidget({
   id,
@@ -13,10 +14,10 @@ function HeaderWidget({
 }) {
   const widgetRef = useRef(null);
   const formRef = useRef(null);
-  const [formTransform, setFormTransform] = useState('translateY(0)');
-  const [formTop, setFormTop] = useState('100%'); // Default to below
   const [isFormVisible, setIsFormVisible] = useState(false);
-  const [formPosition, setFormPosition] = useState('below'); // 'above' or 'below'
+
+  // Use the custom hook
+  const { formTransform, formTop } = useFormPosition(widgetRef, formRef, isEditing, draggedPosition, id);
 
   const defaultContent = {
     title: 'Welcome to Our Website',
@@ -36,74 +37,6 @@ function HeaderWidget({
     e.stopPropagation();
     setIsEditing(true);
   };
-
-  const updateFormPosition = () => {
-    if (formRef.current && widgetRef.current) {
-      const widgetRect = widgetRef.current.getBoundingClientRect();
-      const formHeight = formRef.current.offsetHeight;
-      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-
-      const spaceAbove = widgetRect.top;
-      const spaceBelow = viewportHeight - widgetRect.bottom;
-
-      const buffer = 20; // pixels, to prevent frequent flipping
-
-      // Decide whether to position form above or below, change only if necessary
-      if (formPosition === 'below') {
-        if (spaceBelow < formHeight + buffer && spaceAbove >= formHeight + buffer) {
-          // Switch to above
-          setFormPosition('above');
-          setFormTop('0');
-          setFormTransform('translateY(-100%)');
-        }
-      } else if (formPosition === 'above') {
-        if (spaceAbove < formHeight + buffer && spaceBelow >= formHeight + buffer) {
-          // Switch to below
-          setFormPosition('below');
-          setFormTop('100%');
-          setFormTransform('translateY(0)');
-        }
-      } else {
-        // Initial positioning
-        if (spaceBelow >= formHeight + buffer) {
-          setFormPosition('below');
-          setFormTop('100%');
-          setFormTransform('translateY(0)');
-        } else if (spaceAbove >= formHeight + buffer) {
-          setFormPosition('above');
-          setFormTop('0');
-          setFormTransform('translateY(-100%)');
-        } else {
-          // Default to below
-          setFormPosition('below');
-          setFormTop('100%');
-          setFormTransform('translateY(0)');
-        }
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (isEditing) {
-      updateFormPosition();
-
-      const handleWindowResize = () => {
-        updateFormPosition();
-      };
-
-      window.addEventListener('resize', handleWindowResize);
-
-      return () => {
-        window.removeEventListener('resize', handleWindowResize);
-      };
-    }
-  }, [isEditing]);
-
-  useEffect(() => {
-    if (draggedPosition && draggedPosition.id === id) {
-      updateFormPosition();
-    }
-  }, [draggedPosition]);
 
   useEffect(() => {
     if (isEditing) {
