@@ -21,6 +21,7 @@ function WebsiteBuilder() {
   const [widgets, setWidgets] = useState([]);
   const [contextMenu, setContextMenu] = useState(null);
   const [editingWidget, setEditingWidget] = useState(null);
+  const [draggedWidgetPosition, setDraggedWidgetPosition] = useState(null);
 
   const addWidget = (type) => {
     const defaultContent = {
@@ -195,6 +196,14 @@ function WebsiteBuilder() {
     }
   };
 
+  const onDrag = (layout, oldItem, newItem) => {
+    setDraggedWidgetPosition({
+      id: newItem.i,
+      x: newItem.x,
+      y: newItem.y,
+    });
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="website-builder" onClick={closeContextMenu}>
@@ -216,6 +225,7 @@ function WebsiteBuilder() {
             rowHeight={15}
             width={1200}
             onLayoutChange={onLayoutChange}
+            onDrag={onDrag}
             isResizable={true}
             isDraggable={true}
             containerPadding={[0, 0]}
@@ -249,6 +259,7 @@ function WebsiteBuilder() {
                     isEditing={editingWidget && editingWidget.i === widget.i}
                     setIsEditing={(isEditing) => setEditingWidget(isEditing ? widget : null)}
                     onContextMenu={(e) => handleContextMenu(e, widget)}
+                    draggedPosition={draggedWidgetPosition}
                   />
                 </div>
               );
