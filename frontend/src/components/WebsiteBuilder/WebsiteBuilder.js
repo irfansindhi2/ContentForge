@@ -13,6 +13,7 @@ import ArticleWidget from './widgets/ArticleWidget';
 import SliderWidget from './widgets/SliderWidget';
 import MenuWidget from './widgets/MenuWidget';
 import AdWidget from './widgets/AdWidget';
+import TextWidget from './widgets/TextWidget';
 import ContextMenu from './ContextMenu';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
@@ -30,7 +31,8 @@ function WebsiteBuilder() {
       Article: { title: 'Article Title', body: 'Article content goes here...', backgroundColor: '#ffffff', textColor: '#000000' },
       Slider: { imageUrls: [], backgroundColor: '#ffffff' },
       Menu: { menuItems: ['Home', 'About', 'Contact'], backgroundColor: '#f8f9fa', textColor: '#333333' },
-      Ad: { imageUrl: '', linkUrl: '', backgroundColor: '#ffffff' }
+      Ad: { imageUrl: '', linkUrl: '', backgroundColor: '#ffffff' },
+      Text: { text: 'Enter your text here', backgroundColor: '#ffffff', textColor: '#000000', fontSize: '16px', alignment: 'left' },
     };
 
     const newWidget = {
@@ -170,6 +172,12 @@ function WebsiteBuilder() {
                   </a>
                 </div>
               `;
+            case 'Text':
+              return `
+                <div class="widget" style="grid-area: ${gridArea}; background-color: ${content.backgroundColor || '#ffffff'}; color: ${content.textColor || '#000000'}; font-size: ${content.fontSize || '16px'}; text-align: ${content.alignment || 'left'};">
+                  <p>${content.text || ''}</p>
+                </div>
+              `;
             default:
               return '';
           }
@@ -214,6 +222,7 @@ function WebsiteBuilder() {
           <button onClick={() => addWidget('Slider')}>Add Slider</button>
           <button onClick={() => addWidget('Menu')}>Add Menu</button>
           <button onClick={() => addWidget('Ad')}>Add Ad</button>
+          <button onClick={() => addWidget('Text')}>Add Text</button>
           <button onClick={downloadCurrentLayout}>Download Layout</button>
         </div>
         <div className="canvas-container" onClick={handleCanvasClick}>
@@ -242,7 +251,8 @@ function WebsiteBuilder() {
                 Article: ArticleWidget,
                 Slider: SliderWidget,
                 Menu: MenuWidget,
-                Ad: AdWidget
+                Ad: AdWidget,
+                Text: TextWidget
               }[widget.type];
 
               return (
