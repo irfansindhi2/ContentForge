@@ -31,6 +31,10 @@ function HeaderWidget({
 
   const currentContent = { ...defaultContent, ...content };
 
+  const formStyle = {
+    fontSize: '14px', // Set a fixed font size for the form
+  };
+
   const handleChange = (field, value) => {
     onUpdate(id, { ...currentContent, [field]: value });
   };
@@ -41,8 +45,12 @@ function HeaderWidget({
   };
 
   const handleIconClick = (formType) => {
-    setIsEditing(true);
-    setActiveForm(formType);
+    if (formType === 'delete') {
+      onDelete(id);
+    } else {
+      setIsEditing(true);
+      setActiveForm(formType);
+    }
   };
 
   const closeForm = () => {
@@ -78,14 +86,15 @@ function HeaderWidget({
           style={{
             transform: formTransform,
             top: formTop,
+            ...formStyle, // Apply the form style here
           }}
         >
           <div className="widget-icons">
-            <span onClick={() => handleIconClick('text')}>📝</span>
-            <span onClick={() => handleIconClick('color')}>🎨</span>
-            <span onClick={() => handleIconClick('layout')}>📐</span>
+            <span onClick={() => handleIconClick('text')}><FaEdit /></span>
+            <span onClick={() => handleIconClick('color')}><FaPalette /></span>
+            <span onClick={() => handleIconClick('delete')}><FaTrash /></span>
           </div>
-          <div className={`widget-form ${activeForm ? 'active' : ''}`}>
+          <div className={`widget-form ${activeForm ? 'active' : ''}`} style={formStyle}>
             {activeForm === 'text' && (
               <>
                 <div className="form-group">
