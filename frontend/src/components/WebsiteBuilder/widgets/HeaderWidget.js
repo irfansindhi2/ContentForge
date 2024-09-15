@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './HeaderWidget.css';
 import useFormPosition from './useFormPosition';
-import { FaEdit, FaPalette, FaTrash, FaTimes } from 'react-icons/fa'; // Import icons
 
 function HeaderWidget({
   id,
@@ -49,13 +48,20 @@ function HeaderWidget({
       onDelete(id);
     } else {
       setIsEditing(true);
-      setActiveForm(formType);
+      setActiveForm(prevForm => prevForm === formType ? null : formType);
     }
   };
 
   const closeForm = () => {
     setIsEditing(false);
     setActiveForm(null);
+  };
+
+  const handleFormClick = (e) => {
+    e.stopPropagation();
+    if (e.target === e.currentTarget) {
+      closeForm();
+    }
   };
 
   return (
@@ -88,11 +94,27 @@ function HeaderWidget({
             top: formTop,
             ...formStyle, // Apply the form style here
           }}
+          onClick={handleFormClick}
         >
-          <div className="widget-icons">
-            <span onClick={() => handleIconClick('text')}><FaEdit /></span>
-            <span onClick={() => handleIconClick('color')}><FaPalette /></span>
-            <span onClick={() => handleIconClick('delete')}><FaTrash /></span>
+          <div className="widget-tabs">
+            <span 
+              className={`tab ${activeForm === 'text' ? 'active' : ''}`}
+              onClick={() => handleIconClick('text')}
+            >
+              Font
+            </span>
+            <span 
+              className={`tab ${activeForm === 'color' ? 'active' : ''}`}
+              onClick={() => handleIconClick('color')}
+            >
+              Background
+            </span>
+            <span 
+              className="tab delete-tab"
+              onClick={() => handleIconClick('delete')}
+            >
+              Delete
+            </span>
           </div>
           <div className={`widget-form ${activeForm ? 'active' : ''}`} style={formStyle}>
             {activeForm === 'text' && (

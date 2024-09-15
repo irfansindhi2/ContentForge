@@ -110,3 +110,19 @@
     opacity: 1;
     overflow: visible;
   }
+
+  .widget-tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 15px;
+  }
+
+  .tab {
+    cursor: pointer;
+    padding: 5px 10px;
+    transition: all 0.3s ease;
+  }
+
+  .tab.active {
+    border-bottom: 2px solid #007bff;
+  }
