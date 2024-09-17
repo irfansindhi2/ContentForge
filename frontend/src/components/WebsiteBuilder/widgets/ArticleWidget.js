@@ -1,66 +1,176 @@
-import React from 'react';
-import { Resizable } from 'react-resizable';
+import React, { useState, useRef } from 'react';
+import './ArticleWidget.css';
+import useFormPosition from './useFormPosition';
 
-function ArticleWidget({ id, content, onUpdate, onDelete }) {
+function ArticleWidget({
+  id,
+  content,
+  onUpdate,
+  onDelete,
+  isEditing,
+  setIsEditing,
+  onContextMenu,
+  draggedPosition,
+}) {
+  const widgetRef = useRef(null);
+  const formRef = useRef(null);
+  const [activeForm, setActiveForm] = useState(null);
+
+  const { formTransform, formTop } = useFormPosition(widgetRef, formRef, isEditing, draggedPosition, id);
+
   const defaultContent = {
     title: 'Article Title',
     body: 'Article content goes here...',
     backgroundColor: '#ffffff',
     textColor: '#000000',
+    fontSize: '16px',
   };
 
   const currentContent = { ...defaultContent, ...content };
+
+  const formStyle = {
+    fontSize: '14px',
+  };
 
   const handleChange = (field, value) => {
     onUpdate(id, { ...currentContent, [field]: value });
   };
 
+  const handleClick = (e) => {
+    e.stopPropagation();
+    setIsEditing(true);
+  };
+
+  const handleIconClick = (formType) => {
+    if (formType === 'delete') {
+      onDelete(id);
+    } else {
+      setIsEditing(true);
+      setActiveForm(prevForm => prevForm === formType ? null : formType);
+    }
+  };
+
+  const closeForm = () => {
+    setIsEditing(false);
+    setActiveForm(null);
+  };
+
+  const handleFormClick = (e) => {
+    e.stopPropagation();
+    if (e.target === e.currentTarget) {
+      closeForm();
+    }
+  };
+
   return (
-    <Resizable
-      width={200}
-      height={200}
-      onResize={(e, { size }) => {
-        // Handle resize if needed
+    <div 
+      ref={widgetRef} 
+      className="article-widget"
+      style={{ 
+        width: '100%', 
+        height: '100%', 
+        backgroundColor: currentContent.backgroundColor,
+        color: currentContent.textColor,
+        fontSize: currentContent.fontSize,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
       }}
+      onClick={handleClick}
+      onContextMenu={onContextMenu}
     >
-      <div className="widget article-widget">
-        <h2>Article</h2>
-        <input
-          type="text"
-          value={currentContent.title}
-          onChange={(e) => handleChange('title', e.target.value)}
-          placeholder="Article Title"
-        />
-        <textarea
-          value={currentContent.body}
-          onChange={(e) => handleChange('body', e.target.value)}
-          placeholder="Article Body"
-        />
-        <input
-          type="color"
-          value={currentContent.backgroundColor}
-          onChange={(e) => handleChange('backgroundColor', e.target.value)}
-        />
-        <label>Background Color</label>
-        <input
-          type="color"
-          value={currentContent.textColor}
-          onChange={(e) => handleChange('textColor', e.target.value)}
-        />
-        <label>Text Color</label>
-        <button onClick={() => onDelete(id)}>Delete</button>
-        
-        <div style={{
-          backgroundColor: currentContent.backgroundColor,
-          color: currentContent.textColor,
-          padding: '20px',
-          marginTop: '10px'
-        }}>
-          <h3>{currentContent.title}</h3>
-          <p>{currentContent.body}</p>
+      <h2>{currentContent.title}</h2>
+      <p>{currentContent.body}</p>
+      {isEditing && (
+        <div 
+          ref={formRef}
+          className={`widget-edit-overlay ${isEditing ? 'active' : ''}`}
+          style={{
+            transform: formTransform,
+            top: formTop,
+            ...formStyle,
+          }}
+          onClick={handleFormClick}
+        >
+          <div className="widget-tabs">
+            <span 
+              className={`tab ${activeForm === 'content' ? 'active' : ''}`}
+              onClick={() => handleIconClick('content')}
+            >
+              Content
+            </span>
+            <span 
+              className={`tab ${activeForm === 'style' ? 'active' : ''}`}
+              onClick={() => handleIconClick('style')}
+            >
+              Style
+            </span>
+            <span 
+              className="tab delete-tab"
+              onClick={() => handleIconClick('delete')}
+            >
+              Delete
+            </span>
+          </div>
+          <div className={`widget-form ${activeForm ? 'active' : ''}`} style={formStyle}>
+            {activeForm === 'content' && (
+              <>
+                <div className="form-group">
+                  <label htmlFor={`title-${id}`}>Title</label>
+                  <input
+                    id={`title-${id}`}
+                    type="text"
+                    value={currentContent.title}
+                    onChange={(e) => handleChange('title', e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor={`body-${id}`}>Body</label>
+                  <textarea
+                    id={`body-${id}`}
+                    value={currentContent.body}
+                    onChange={(e) => handleChange('body', e.target.value)}
+                  />
+                </div>
+              </>
+            )}
+            {activeForm === 'style' && (
+              <>
+                <div className="form-group">
+                  <label htmlFor={`fontSize-${id}`}>Font Size</label>
+                  <input
+                    id={`fontSize-${id}`}
+                    type="text"
+                    value={currentContent.fontSize}
+                    onChange={(e) => handleChange('fontSize', e.target.value)}
+                    placeholder="e.g., 16px, 1.2em, 1.5rem"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor={`bgColor-${id}`}>Background Color</label>
+                  <input
+                    id={`bgColor-${id}`}
+                    type="color"
+                    value={currentContent.backgroundColor}
+                    onChange={(e) => handleChange('backgroundColor', e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor={`textColor-${id}`}>Text Color</label>
+                  <input
+                    id={`textColor-${id}`}
+                    type="color"
+                    value={currentContent.textColor}
+                    onChange={(e) => handleChange('textColor', e.target.value)}
+                  />
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    </Resizable>
+      )}
+    </div>
   );
 }
 

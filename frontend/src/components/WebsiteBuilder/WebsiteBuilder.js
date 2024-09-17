@@ -28,7 +28,7 @@ function WebsiteBuilder() {
     const defaultContent = {
       Header: { title: 'Welcome', subtitle: 'to our website', backgroundColor: '#f8f9fa', textColor: '#333333', alignment: 'center' },
       Footer: { copyright: '© 2023 Your Company', links: [], backgroundColor: '#f8f9fa', textColor: '#333333' },
-      Article: { title: 'Article Title', body: 'Article content goes here...', backgroundColor: '#ffffff', textColor: '#000000' },
+      Article: { title: 'Article Title', body: 'Article content goes here...', backgroundColor: '#ffffff', textColor: '#000000', fontSize: '16px' },
       Slider: { imageUrls: [], backgroundColor: '#ffffff' },
       Menu: { menuItems: ['Home', 'About', 'Contact'], backgroundColor: '#f8f9fa', textColor: '#333333' },
       Ad: { imageUrl: '', linkUrl: '', backgroundColor: '#ffffff' },
@@ -143,7 +143,7 @@ function WebsiteBuilder() {
               `;
             case 'Article':
               return `
-                <div class="widget" style="grid-area: ${gridArea}; background-color: ${content.backgroundColor || '#ffffff'}; color: ${content.textColor || '#000000'};">
+                <div class="widget" style="grid-area: ${gridArea}; background-color: ${content.backgroundColor || '#ffffff'}; color: ${content.textColor || '#000000'}; font-size: ${content.fontSize || '16px'};">
                   <h2>${content.title || 'Article Title'}</h2>
                   <p>${content.body || 'Article content'}</p>
                 </div>

@@ -1,0 +1,112 @@
+.article-widget {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    overflow: visible;
+  }
+  
+  .article-content {
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .widget-edit-overlay {
+    pointer-events: auto;
+    max-height: 300px;
+    overflow-y: auto;
+    width: 250px;
+    position: absolute;
+    left: 0;
+    z-index: 1000;
+    background-color: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ccc;
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(0);
+  }
+  
+  .widget-edit-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  
+  .widget-edit-overlay h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+  }
+  
+  .form-group {
+    margin-bottom: 10px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+  
+  .form-group input[type='color'] {
+    height: 30px;
+  }
+  
+  .form-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+  }
+  
+  .form-actions button {
+    padding: 5px 10px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  
+  .form-actions button:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .widget-tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 15px;
+  }
+  
+  .widget-tabs .tab {
+    cursor: pointer;
+    padding: 5px 10px;
+    transition: all 0.3s ease;
+  }
+  
+  .widget-tabs .tab.active {
+    border-bottom: 2px solid #007bff;
+  }
+  
+  .widget-form {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  }
+  
+  .widget-form.active {
+    max-height: 500px;
+    opacity: 1;
+    overflow: visible;
+  }
