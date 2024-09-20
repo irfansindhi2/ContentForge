@@ -1,18 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Responsive, WidthProvider } from 'react-grid-layout';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import './HighlightWidget.css';
-import 'react-grid-layout/css/styles.css';
-import 'react-resizable/css/styles.css';
+import SortableArticleWidget from './SortableArticleWidget';
 
-import HeaderWidget from './HeaderWidget';
 import ArticleWidget from './ArticleWidget';
 
-const ResponsiveGridLayout = WidthProvider(Responsive);
-
-function HighlightWidget({ id, content, onUpdate }) {
+function HighlightWidget({ id, content, onUpdate, isEditing, setIsEditing, onContextMenu }) {
   const [widgets, setWidgets] = useState(content.widgets || []);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingWidget, setEditingWidget] = useState(null);
 
   useEffect(() => {
     setWidgets(content.widgets || []);
@@ -30,11 +26,7 @@ function HighlightWidget({ id, content, onUpdate }) {
     };
 
     const newWidget = {
-      i: `${type}-${Date.now()}`,
-      x: 0,
-      y: Infinity,
-      w: 6,
-      h: 4,
+      id: `${type}-${Date.now()}`,
       type: type,
       content: defaultContent[type],
     };
@@ -46,20 +38,35 @@ function HighlightWidget({ id, content, onUpdate }) {
 
   const updateInnerWidget = (widgetId, widgetContent) => {
     const updatedWidgets = widgets.map((widget) =>
-      widget.i === widgetId ? { ...widget, content: widgetContent } : widget
+      widget.id === widgetId ? { ...widget, content: widgetContent } : widget
     );
     setWidgets(updatedWidgets);
     onUpdate(id, { ...content, widgets: updatedWidgets });
   };
 
   const deleteInnerWidget = (widgetId) => {
-    const updatedWidgets = widgets.filter((widget) => widget.i !== widgetId);
+    const updatedWidgets = widgets.filter((widget) => widget.id !== widgetId);
     setWidgets(updatedWidgets);
     onUpdate(id, { ...content, widgets: updatedWidgets });
   };
 
+  const sensors = useSensors(
+    useSensor(PointerSensor)
+  );
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    if (active.id !== over.id) {
+      const oldIndex = widgets.findIndex((widget) => widget.id === active.id);
+      const newIndex = widgets.findIndex((widget) => widget.id === over.id);
+      const updatedWidgets = arrayMove(widgets, oldIndex, newIndex);
+      setWidgets(updatedWidgets);
+      onUpdate(id, { ...content, widgets: updatedWidgets });
+    }
+  };
+
   return (
-    <div className="highlight-widget">
+    <div className="highlight-widget" onContextMenu={onContextMenu}>
       <button
         className="add-article-button"
         onClick={() => addInnerWidget('Article')}
@@ -71,46 +78,30 @@ function HighlightWidget({ id, content, onUpdate }) {
           {isEditing ? 'Done' : 'Edit'}
         </button>
       </div>
-      <ResponsiveGridLayout
-        className="layout"
-        layouts={{ lg: widgets }}
-        breakpoints={{ lg: 1200 }}
-        cols={{ lg: 12 }}
-        rowHeight={30}
-        width={600}
-        isDraggable={isEditing}
-        isResizable={isEditing}
-        onLayoutChange={(layout) => {
-          const updatedWidgets = widgets.map((widget) => {
-            const updatedPosition = layout.find((item) => item.i === widget.i);
-            return updatedPosition ? { ...widget, ...updatedPosition } : widget;
-          });
-          setWidgets(updatedWidgets);
-          onUpdate(id, { ...content, widgets: updatedWidgets });
-        }}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
       >
-        {widgets.map((widget) => {
-          const InnerWidgetComponent = {
-            Header: HeaderWidget,
-            Article: ArticleWidget,
-          }[widget.type];
-
-          return (
-            <div key={widget.i} data-grid={widget}>
-              <InnerWidgetComponent
-                id={widget.i}
+        <SortableContext
+          items={widgets.map((widget) => widget.id)}
+          strategy={horizontalListSortingStrategy}
+        >
+          <div className="inner-widgets-container">
+            {widgets.map((widget) => (
+              <SortableArticleWidget
+                key={widget.id}
+                id={widget.id}
                 content={widget.content}
                 onUpdate={updateInnerWidget}
-                onDelete={() => deleteInnerWidget(widget.i)}
-                isEditing={editingWidget && editingWidget.i === widget.i}
-                setIsEditing={(isEditing) =>
-                  setEditingWidget(isEditing ? widget : null)
-                }
+                onDelete={() => deleteInnerWidget(widget.id)}
+                isEditing={isEditing}
+                setIsEditing={setIsEditing}
               />
-            </div>
-          );
-        })}
-      </ResponsiveGridLayout>
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
     </div>
   );
 }

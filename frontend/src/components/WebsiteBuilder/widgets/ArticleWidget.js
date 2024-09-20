@@ -1,3 +1,4 @@
+// ArticleWidget.js
 import React, { useState, useRef } from 'react';
 import './ArticleWidget.css';
 import useFormPosition from './useFormPosition';
@@ -67,15 +68,10 @@ function ArticleWidget({
       ref={widgetRef} 
       className="article-widget"
       style={{ 
-        width: '100%', 
-        height: '100%', 
         backgroundColor: currentContent.backgroundColor,
         color: currentContent.textColor,
         fontSize: currentContent.fontSize,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
+        cursor: 'grab',
       }}
       onClick={handleClick}
       onContextMenu={onContextMenu}
