@@ -14,6 +14,7 @@ import SliderWidget from './widgets/SliderWidget';
 import MenuWidget from './widgets/MenuWidget';
 import AdWidget from './widgets/AdWidget';
 import TextWidget from './widgets/TextWidget';
+import HighlightWidget from './widgets/HighlightWidget';
 import ContextMenu from './ContextMenu';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
@@ -33,6 +34,7 @@ function WebsiteBuilder() {
       Menu: { menuItems: ['Home', 'About', 'Contact'], backgroundColor: '#f8f9fa', textColor: '#333333' },
       Ad: { imageUrl: '', linkUrl: '', backgroundColor: '#ffffff' },
       Text: { text: 'Enter your text here', backgroundColor: '#ffffff', textColor: '#000000', fontSize: '16px', alignment: 'left' },
+      Highlight: { widgets: [] },
     };
 
     const newWidget = {
@@ -223,6 +225,7 @@ function WebsiteBuilder() {
           <button onClick={() => addWidget('Menu')}>Add Menu</button>
           <button onClick={() => addWidget('Ad')}>Add Ad</button>
           <button onClick={() => addWidget('Text')}>Add Text</button>
+          <button onClick={() => addWidget('Highlight')}>Add Highlight</button>
           <button onClick={downloadCurrentLayout}>Download Layout</button>
         </div>
         <div className="canvas-container" onClick={handleCanvasClick}>
@@ -251,7 +254,8 @@ function WebsiteBuilder() {
                 Slider: SliderWidget,
                 Menu: MenuWidget,
                 Ad: AdWidget,
-                Text: TextWidget
+                Text: TextWidget,
+                Highlight: HighlightWidget,
               }[widget.type];
 
               return (

@@ -1,0 +1,17 @@
+.highlight-widget {
+    border: 2px dashed #ccc;
+    padding: 10px;
+    position: relative;
+  }
+  
+  .highlight-toolbar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+  }
+  
+  .highlight-toolbar button {
+    margin-left: 5px;
+  }
+  
