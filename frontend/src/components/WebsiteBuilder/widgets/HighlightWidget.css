@@ -1,17 +1,21 @@
 .highlight-widget {
-    border: 2px dashed #ccc;
-    padding: 10px;
-    position: relative;
-  }
-  
-  .highlight-toolbar {
-    position: absolute;
-    top: 0;
-    right: 0;
-    display: flex;
-  }
-  
-  .highlight-toolbar button {
-    margin-left: 5px;
-  }
-  
+  position: relative;
+  border: 2px dashed #ccc;
+  padding: 10px;
+}
+
+.add-article-button {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  z-index: 10;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.add-article-button:hover {
+  background-color: #0056b3;
+}

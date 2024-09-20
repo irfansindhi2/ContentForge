@@ -1,68 +1,75 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import './HighlightWidget.css';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 
-// Import your widget components
 import HeaderWidget from './HeaderWidget';
-import FooterWidget from './FooterWidget';
 import ArticleWidget from './ArticleWidget';
-// ... other widgets
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 function HighlightWidget({ id, content, onUpdate }) {
   const [widgets, setWidgets] = useState(content.widgets || []);
   const [isEditing, setIsEditing] = useState(false);
+  const [editingWidget, setEditingWidget] = useState(null);
+
+  useEffect(() => {
+    setWidgets(content.widgets || []);
+  }, [content.widgets]);
 
   const addInnerWidget = (type) => {
     const defaultContent = {
-      // ... default content for inner widgets
+      Article: {
+        title: 'Article Title',
+        body: 'Article content goes here...',
+        backgroundColor: '#ffffff',
+        textColor: '#000000',
+        fontSize: '16px',
+      },
     };
 
     const newWidget = {
       i: `${type}-${Date.now()}`,
       x: 0,
-      y: 0,
+      y: Infinity,
       w: 6,
       h: 4,
       type: type,
       content: defaultContent[type],
     };
 
-    setWidgets([...widgets, newWidget]);
-    // Update the parent content
-    onUpdate(id, { widgets: [...widgets, newWidget] });
+    const updatedWidgets = [...widgets, newWidget];
+    setWidgets(updatedWidgets);
+    onUpdate(id, { ...content, widgets: updatedWidgets });
   };
 
-  const updateInnerWidget = (widgetId, content) => {
+  const updateInnerWidget = (widgetId, widgetContent) => {
     const updatedWidgets = widgets.map((widget) =>
-      widget.i === widgetId ? { ...widget, content } : widget
+      widget.i === widgetId ? { ...widget, content: widgetContent } : widget
     );
     setWidgets(updatedWidgets);
-    onUpdate(id, { widgets: updatedWidgets });
+    onUpdate(id, { ...content, widgets: updatedWidgets });
   };
 
   const deleteInnerWidget = (widgetId) => {
     const updatedWidgets = widgets.filter((widget) => widget.i !== widgetId);
     setWidgets(updatedWidgets);
-    onUpdate(id, { widgets: updatedWidgets });
+    onUpdate(id, { ...content, widgets: updatedWidgets });
   };
 
   return (
     <div className="highlight-widget">
+      <button
+        className="add-article-button"
+        onClick={() => addInnerWidget('Article')}
+      >
+        Add Article
+      </button>
       <div className="highlight-toolbar">
         <button onClick={() => setIsEditing(!isEditing)}>
           {isEditing ? 'Done' : 'Edit'}
         </button>
-        {isEditing && (
-          <>
-            <button onClick={() => addInnerWidget('Header')}>Add Header</button>
-            <button onClick={() => addInnerWidget('Article')}>Add Article</button>
-            {/* Add buttons for other widgets */}
-          </>
-        )}
       </div>
       <ResponsiveGridLayout
         className="layout"
@@ -79,14 +86,13 @@ function HighlightWidget({ id, content, onUpdate }) {
             return updatedPosition ? { ...widget, ...updatedPosition } : widget;
           });
           setWidgets(updatedWidgets);
-          onUpdate(id, { widgets: updatedWidgets });
+          onUpdate(id, { ...content, widgets: updatedWidgets });
         }}
       >
         {widgets.map((widget) => {
           const InnerWidgetComponent = {
             Header: HeaderWidget,
             Article: ArticleWidget,
-            // ... other widgets
           }[widget.type];
 
           return (
@@ -96,7 +102,10 @@ function HighlightWidget({ id, content, onUpdate }) {
                 content={widget.content}
                 onUpdate={updateInnerWidget}
                 onDelete={() => deleteInnerWidget(widget.i)}
-                isEditing={isEditing}
+                isEditing={editingWidget && editingWidget.i === widget.i}
+                setIsEditing={(isEditing) =>
+                  setEditingWidget(isEditing ? widget : null)
+                }
               />
             </div>
           );
