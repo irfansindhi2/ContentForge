@@ -20,13 +20,22 @@ function SortableArticleWidget({ id, content, onUpdate, onDelete }) {
     opacity: isDragging ? 0.5 : 1,
   };
 
+  const handlePointerDown = (event) => {
+    event.stopPropagation();
+  };
+
   return (
-    <div ref={setNodeRef} style={style}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      onPointerDown={handlePointerDown}
+    >
       <ArticleWidget
         id={id}
         content={content}
         onUpdate={onUpdate}
         onDelete={onDelete}
+        isNested={true}
         dragHandleProps={{ ...attributes, ...listeners }}
       />
     </div>

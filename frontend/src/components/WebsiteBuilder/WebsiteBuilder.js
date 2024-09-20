@@ -50,7 +50,7 @@ function WebsiteBuilder() {
   };
 
   const updateWidget = (id, content) => {
-    setWidgets(widgets.map(widget => 
+    setWidgets(widgets.map(widget =>
       widget.i === id ? { ...widget, content } : widget
     ));
   };
@@ -122,11 +122,11 @@ function WebsiteBuilder() {
     <body>
       <div class="layout">
         ${widgets.map(widget => {
-          const content = widget.content || {};
-          const gridArea = `${widget.y + 1} / ${widget.x + 1} / span ${widget.h} / span ${widget.w}`;
-          switch (widget.type) {
-            case 'Header':
-              return `
+      const content = widget.content || {};
+      const gridArea = `${widget.y + 1} / ${widget.x + 1} / span ${widget.h} / span ${widget.w}`;
+      switch (widget.type) {
+        case 'Header':
+          return `
                 <div class="widget" style="grid-area: ${gridArea}; background-color: ${content.backgroundColor || '#ffffff'};">
                   <h1 style="color: ${content.textColor || '#000000'}; text-align: ${content.alignment || 'left'};">
                     ${content.title || 'Header'}
@@ -134,8 +134,8 @@ function WebsiteBuilder() {
                   <p style="color: ${content.textColor || '#000000'};">${content.subtitle || ''}</p>
                 </div>
               `;
-            case 'Footer':
-              return `
+        case 'Footer':
+          return `
                 <div class="widget" style="grid-area: ${gridArea}; background-color: ${content.backgroundColor || '#ffffff'}; color: ${content.textColor || '#000000'};">
                   <p>${content.copyright || ''}</p>
                   <nav>
@@ -143,61 +143,61 @@ function WebsiteBuilder() {
                   </nav>
                 </div>
               `;
-            case 'Article':
-              return `
+        case 'Article':
+          return `
                 <div class="widget" style="grid-area: ${gridArea}; background-color: ${content.backgroundColor || '#ffffff'}; color: ${content.textColor || '#000000'}; font-size: ${content.fontSize || '16px'};">
                   <h2>${content.title || 'Article Title'}</h2>
                   <p>${content.body || 'Article content'}</p>
                 </div>
               `;
-            case 'Slider':
-              return `
+        case 'Slider':
+          return `
                 <div class="widget" style="grid-area: ${gridArea}; background-color: ${content.backgroundColor || '#ffffff'};">
                   <div class="slider">
                     ${(content.imageUrls || []).map(url => `<img src="${url}" alt="Slider image" style="max-width: 100%;">`).join('')}
                   </div>
                 </div>
               `;
-            case 'Menu':
-              return `
+        case 'Menu':
+          return `
                 <div class="widget" style="grid-area: ${gridArea}; background-color: ${content.backgroundColor || '#ffffff'};">
                   <nav>
                     ${(content.menuItems || []).map(item => `<a href="#" style="color: ${content.textColor || '#000000'};">${item}</a>`).join(' ')}
                   </nav>
                 </div>
               `;
-            case 'Ad':
-              return `
+        case 'Ad':
+          return `
                 <div class="widget" style="grid-area: ${gridArea}; background-color: ${content.backgroundColor || '#ffffff'};">
                   <a href="${content.linkUrl || '#'}" target="_blank">
                     <img src="${content.imageUrl || ''}" alt="Advertisement" style="max-width: 100%;">
                   </a>
                 </div>
               `;
-            case 'Text':
-              return `
+        case 'Text':
+          return `
                 <div class="widget" style="grid-area: ${gridArea}; background-color: ${content.backgroundColor || '#ffffff'}; color: ${content.textColor || '#000000'}; font-size: ${content.fontSize || '16px'}; text-align: ${content.alignment || 'left'};">
                   <p>${content.text || ''}</p>
                 </div>
               `;
-            default:
-              return '';
-          }
-        }).join('')}
+        default:
+          return '';
+      }
+    }).join('')}
       </div>
     </body>
     </html>
   `;
 
-  const blob = new Blob([htmlContent], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'generated_website.html';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'generated_website.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const handleCanvasClick = (e) => {
@@ -246,6 +246,7 @@ function WebsiteBuilder() {
             preventCollision={true}
             useCSSTransforms={true}
             draggableHandle=".widget-drag-handle"
+            draggableCancel=".nested-draggable"
           >
             {widgets.map(widget => {
               const WidgetComponent = {
@@ -260,8 +261,8 @@ function WebsiteBuilder() {
               }[widget.type];
 
               return (
-                <div 
-                  key={widget.i} 
+                <div
+                  key={widget.i}
                   data-grid={widget}
                   style={{ width: '100%', height: '100%' }}
                 >

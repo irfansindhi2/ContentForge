@@ -11,11 +11,13 @@ function ArticleWidget({
   onContextMenu,
   draggedPosition,
   dragHandleProps,
+  isNested = false,
 }) {
   const widgetRef = useRef(null);
   const formRef = useRef(null);
   const [isEditing, setIsEditing] = useState(false);
   const [activeForm, setActiveForm] = useState(null);
+  const dragHandleClass = 'widget-drag-handle';
 
   const { formTransform, formTop } = useFormPosition(widgetRef, formRef, isEditing, draggedPosition, id);
 
@@ -58,7 +60,6 @@ function ArticleWidget({
 
   const handleFormClick = (e) => {
     e.stopPropagation();
-    // We don't close the form when clicking inside it
   };
 
   useEffect(() => {
@@ -82,10 +83,16 @@ function ArticleWidget({
     };
   }, [isEditing]);
 
+  const handleDragStart = (e) => {
+    if (isNested) {
+      e.stopPropagation();
+    }
+  };
+
   return (
     <div
       ref={widgetRef}
-      className="article-widget"
+      className={`article-widget ${isNested ? 'nested-draggable' : ''}`}
       style={{
         backgroundColor: currentContent.backgroundColor,
         color: currentContent.textColor,
@@ -94,8 +101,17 @@ function ArticleWidget({
       }}
       onClick={handleClick}
       onContextMenu={onContextMenu}
+      onPointerDown={(e) => {
+        if (isNested) {
+          e.stopPropagation();
+        }
+      }}
     >
-      <div className="widget-drag-handle" {...dragHandleProps}>
+      <div
+        className={dragHandleClass}
+        {...dragHandleProps}
+        onMouseDown={handleDragStart}
+      >
         <span style={{ cursor: 'grab' }}>⋮</span>
       </div>
       <h2>{currentContent.title}</h2>

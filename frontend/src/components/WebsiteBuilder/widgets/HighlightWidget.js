@@ -99,6 +99,7 @@ function HighlightWidget({ id, content, onUpdate, isEditing, setIsEditing, onCon
                 content={widget.content}
                 onUpdate={updateInnerWidget}
                 onDelete={() => deleteInnerWidget(widget.id)}
+                isNested={true}
               />
             ))}
           </div>
