@@ -19,3 +19,20 @@
 .add-article-button:hover {
   background-color: #0056b3;
 }
+
+.widget-drag-handle {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 5px;
+  cursor: grab;
+  z-index: 2;
+  border-radius: 4px;
+}
+
+.widget-drag-handle:hover {
+  cursor: grabbing;
+  background-color: rgba(0, 0, 0, 0.8);
+}

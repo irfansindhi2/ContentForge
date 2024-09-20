@@ -8,13 +8,13 @@ function ArticleWidget({
   content,
   onUpdate,
   onDelete,
-  isEditing,
-  setIsEditing,
   onContextMenu,
   draggedPosition,
+  dragHandleProps,
 }) {
   const widgetRef = useRef(null);
   const formRef = useRef(null);
+  const [isEditing, setIsEditing] = useState(false);
   const [activeForm, setActiveForm] = useState(null);
 
   const { formTransform, formTop } = useFormPosition(widgetRef, formRef, isEditing, draggedPosition, id);
@@ -47,7 +47,7 @@ function ArticleWidget({
       onDelete(id);
     } else {
       setIsEditing(true);
-      setActiveForm(prevForm => prevForm === formType ? null : formType);
+      setActiveForm((prevForm) => (prevForm === formType ? null : formType));
     }
   };
 
@@ -76,6 +76,10 @@ function ArticleWidget({
       onClick={handleClick}
       onContextMenu={onContextMenu}
     >
+      <div className="drag-handle" {...dragHandleProps}>
+        {/* You can use an icon or text as the drag handle */}
+        <span style={{ cursor: 'grab' }}>⋮</span>
+      </div>
       <h2>{currentContent.title}</h2>
       <p>{currentContent.body}</p>
       {isEditing && (

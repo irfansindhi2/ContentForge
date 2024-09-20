@@ -110,3 +110,14 @@
     opacity: 1;
     overflow: visible;
   }
+  .drag-handle {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    padding: 4px;
+    cursor: grab;
+  }
+  
+  .drag-handle:hover {
+    cursor: grabbing;
+  }

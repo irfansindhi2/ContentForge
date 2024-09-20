@@ -245,6 +245,7 @@ function WebsiteBuilder() {
             compactType={null}
             preventCollision={true}
             useCSSTransforms={true}
+            draggableHandle=".widget-drag-handle"
           >
             {widgets.map(widget => {
               const WidgetComponent = {

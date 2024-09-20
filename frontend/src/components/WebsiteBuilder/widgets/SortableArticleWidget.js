@@ -1,9 +1,10 @@
+// SortableArticleWidget.js
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import ArticleWidget from './ArticleWidget';
 
-function SortableArticleWidget(props) {
+function SortableArticleWidget({ id, content, onUpdate, onDelete }) {
   const {
     attributes,
     listeners,
@@ -11,7 +12,7 @@ function SortableArticleWidget(props) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: props.id });
+  } = useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -20,8 +21,14 @@ function SortableArticleWidget(props) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <ArticleWidget {...props} />
+    <div ref={setNodeRef} style={style}>
+      <ArticleWidget
+        id={id}
+        content={content}
+        onUpdate={onUpdate}
+        onDelete={onDelete}
+        dragHandleProps={{ ...attributes, ...listeners }}
+      />
     </div>
   );
 }

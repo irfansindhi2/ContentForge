@@ -4,6 +4,7 @@ import { arrayMove, SortableContext, horizontalListSortingStrategy, useSortable 
 import { CSS } from '@dnd-kit/utilities';
 import './HighlightWidget.css';
 import SortableArticleWidget from './SortableArticleWidget';
+import { FaArrowsAlt } from 'react-icons/fa';
 
 import ArticleWidget from './ArticleWidget';
 
@@ -67,6 +68,9 @@ function HighlightWidget({ id, content, onUpdate, isEditing, setIsEditing, onCon
 
   return (
     <div className="highlight-widget" onContextMenu={onContextMenu}>
+      <div className="widget-drag-handle">
+        <FaArrowsAlt />
+      </div>
       <button
         className="add-article-button"
         onClick={() => addInnerWidget('Article')}
@@ -95,8 +99,6 @@ function HighlightWidget({ id, content, onUpdate, isEditing, setIsEditing, onCon
                 content={widget.content}
                 onUpdate={updateInnerWidget}
                 onDelete={() => deleteInnerWidget(widget.id)}
-                isEditing={isEditing}
-                setIsEditing={setIsEditing}
               />
             ))}
           </div>
