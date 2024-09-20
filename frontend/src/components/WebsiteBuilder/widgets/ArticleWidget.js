@@ -83,10 +83,10 @@ function ArticleWidget({
   }, [isEditing]);
 
   return (
-    <div 
-      ref={widgetRef} 
+    <div
+      ref={widgetRef}
       className="article-widget"
-      style={{ 
+      style={{
         backgroundColor: currentContent.backgroundColor,
         color: currentContent.textColor,
         fontSize: currentContent.fontSize,
@@ -95,14 +95,13 @@ function ArticleWidget({
       onClick={handleClick}
       onContextMenu={onContextMenu}
     >
-      <div className="drag-handle" {...dragHandleProps}>
-        {/* You can use an icon or text as the drag handle */}
+      <div className="widget-drag-handle" {...dragHandleProps}>
         <span style={{ cursor: 'grab' }}>⋮</span>
       </div>
       <h2>{currentContent.title}</h2>
       <p>{currentContent.body}</p>
       {isEditing && (
-        <div 
+        <div
           ref={formRef}
           className={`widget-edit-overlay ${isEditing ? 'active' : ''}`}
           style={{
@@ -113,19 +112,19 @@ function ArticleWidget({
           onClick={handleFormClick}
         >
           <div className="widget-tabs">
-            <span 
+            <span
               className={`tab ${activeForm === 'content' ? 'active' : ''}`}
               onClick={() => handleIconClick('content')}
             >
               Content
             </span>
-            <span 
+            <span
               className={`tab ${activeForm === 'style' ? 'active' : ''}`}
               onClick={() => handleIconClick('style')}
             >
               Style
             </span>
-            <span 
+            <span
               className="tab delete-tab"
               onClick={() => handleIconClick('delete')}
             >
