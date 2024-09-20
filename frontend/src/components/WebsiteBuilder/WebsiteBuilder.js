@@ -242,7 +242,6 @@ function WebsiteBuilder() {
             compactType={null}
             preventCollision={true}
             useCSSTransforms={true}
-            verticalCompact={false}
           >
             {widgets.map(widget => {
               const WidgetComponent = {
