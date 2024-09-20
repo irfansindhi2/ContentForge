@@ -1,5 +1,5 @@
 // ArticleWidget.js
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './ArticleWidget.css';
 import useFormPosition from './useFormPosition';
 
@@ -58,10 +58,29 @@ function ArticleWidget({
 
   const handleFormClick = (e) => {
     e.stopPropagation();
-    if (e.target === e.currentTarget) {
-      closeForm();
-    }
+    // We don't close the form when clicking inside it
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        isEditing &&
+        formRef.current &&
+        !formRef.current.contains(event.target) &&
+        !widgetRef.current.contains(event.target)
+      ) {
+        closeForm();
+      }
+    };
+
+    if (isEditing) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isEditing]);
 
   return (
     <div 
