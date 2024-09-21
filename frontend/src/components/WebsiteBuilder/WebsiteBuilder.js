@@ -25,6 +25,8 @@ function WebsiteBuilder() {
   const [editingWidget, setEditingWidget] = useState(null);
   const [draggedWidgetPosition, setDraggedWidgetPosition] = useState(null);
 
+  const rowHeight = 15;
+
   const addWidget = (type) => {
     const defaultContent = {
       Header: { title: 'Welcome', subtitle: 'to our website', backgroundColor: '#f8f9fa', textColor: '#333333', alignment: 'center' },
@@ -214,6 +216,15 @@ function WebsiteBuilder() {
     });
   };
 
+  // Callback to handle height changes from widgets
+  const handleWidgetHeightChange = (id, newH) => {
+    setWidgets((prevWidgets) =>
+      prevWidgets.map((widget) =>
+        widget.i === id && widget.h !== newH ? { ...widget, h: newH } : widget
+      )
+    );
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="website-builder" onClick={closeContextMenu}>
@@ -275,6 +286,8 @@ function WebsiteBuilder() {
                     setIsEditing={(isEditing) => setEditingWidget(isEditing ? widget : null)}
                     onContextMenu={(e) => handleContextMenu(e, widget)}
                     draggedPosition={draggedWidgetPosition}
+                    onHeightChange={handleWidgetHeightChange} // Pass the callback
+                    rowHeight={rowHeight}
                   />
                 </div>
               );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -8,12 +8,31 @@ import { FaArrowsAlt } from 'react-icons/fa';
 
 import ArticleWidget from './ArticleWidget';
 
-function HighlightWidget({ id, content, onUpdate, isEditing, setIsEditing, onContextMenu }) {
+function HighlightWidget({
+  id,
+  content,
+  onUpdate,
+  isEditing,
+  setIsEditing,
+  onContextMenu,
+  onHeightChange, // Receive the callback prop
+  rowHeight,      // Receive rowHeight from parent
+}) {
   const [widgets, setWidgets] = useState(content.widgets || []);
+  const contentRef = useRef(null);
 
   useEffect(() => {
     setWidgets(content.widgets || []);
   }, [content.widgets]);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      const contentHeight = contentRef.current.offsetHeight;
+      const newH = Math.ceil(contentHeight / rowHeight);
+      onHeightChange(id, newH);
+    }
+  }, [widgets, onHeightChange, id, rowHeight]);
+
 
   const addInnerWidget = (type) => {
     const defaultContent = {
@@ -67,7 +86,7 @@ function HighlightWidget({ id, content, onUpdate, isEditing, setIsEditing, onCon
   };
 
   return (
-    <div className="highlight-widget" onContextMenu={onContextMenu}>
+    <div className="highlight-widget" onContextMenu={onContextMenu} ref={contentRef}>
       <div className="widget-drag-handle">
         <FaArrowsAlt />
       </div>
