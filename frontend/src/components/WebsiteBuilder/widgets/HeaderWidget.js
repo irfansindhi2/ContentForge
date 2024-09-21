@@ -70,7 +70,7 @@ function HeaderWidget({
     if (widgetRef.current) {
       const widgetHeight = widgetRef.current.offsetHeight; // Height in pixels
       const newH = Math.ceil(widgetHeight / rowHeight);
-      onHeightChange(id, newH);
+      onHeightChange(id, newH, newH);
     }
   }, [content, rowHeight]);
   

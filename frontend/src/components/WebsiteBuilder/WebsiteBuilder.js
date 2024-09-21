@@ -273,13 +273,21 @@ function WebsiteBuilder() {
   };
 
   // Callback to handle height changes from widgets
-  const handleWidgetHeightChange = (id, newH) => {
+  const handleWidgetHeightChange = (id, newH, minH) => {
     setWidgets((prevWidgets) => {
       let changed = false;
       const updatedWidgets = prevWidgets.map((widget) => {
-        if (widget.i === id && widget.h !== newH) {
-          changed = true;
-          return { ...widget, h: newH };
+        if (widget.i === id) {
+          const updatedWidget = { ...widget };
+          if (widget.h !== newH) {
+            updatedWidget.h = newH;
+            changed = true;
+          }
+          if (widget.minH !== minH) {
+            updatedWidget.minH = minH;
+            changed = true;
+          }
+          return updatedWidget;
         }
         return widget;
       });
@@ -342,6 +350,7 @@ function WebsiteBuilder() {
                 isResizable: true,
                 minW: isHeader ? totalColumns : 1,
                 maxW: isHeader ? totalColumns : undefined,
+                minH: widget.minH || 1,
               };
 
               return (
