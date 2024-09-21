@@ -282,7 +282,7 @@ function WebsiteBuilder() {
                 <div
                   key={widget.i}
                   data-grid={widget}
-                  style={{ width: '100%', height: '100%' }}
+                  style={{ width: '100%', height: 'auto' }}
                 >
                   <WidgetComponent
                     id={widget.i}

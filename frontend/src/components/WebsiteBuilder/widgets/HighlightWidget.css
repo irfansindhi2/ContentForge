@@ -5,6 +5,11 @@
   box-sizing: border-box;
 }
 
+.inner-widgets-container {
+  padding: 10px; /* Move padding here if needed */
+  box-sizing: border-box;
+}
+
 .add-article-button {
   position: absolute;
   top: 5px;
