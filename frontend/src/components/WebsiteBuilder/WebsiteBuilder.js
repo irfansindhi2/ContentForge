@@ -293,7 +293,7 @@ function WebsiteBuilder() {
                     setIsEditing={(isEditing) => setEditingWidget(isEditing ? widget : null)}
                     onContextMenu={(e) => handleContextMenu(e, widget)}
                     draggedPosition={draggedWidgetPosition}
-                    onHeightChange={handleWidgetHeightChange} // Pass the callback
+                    onHeightChange={handleWidgetHeightChange}
                     rowHeight={rowHeight}
                   />
                 </div>

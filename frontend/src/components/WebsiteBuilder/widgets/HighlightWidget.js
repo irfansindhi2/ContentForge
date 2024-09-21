@@ -79,16 +79,7 @@ function HighlightWidget({
   useEffect(() => {
     if (contentRef.current) {
       const contentHeight = contentRef.current.scrollHeight;
-      const style = getComputedStyle(contentRef.current);
-      const paddingTop = parseFloat(style.paddingTop);
-      const paddingBottom = parseFloat(style.paddingBottom);
-      const borderTop = parseFloat(style.borderTopWidth);
-      const borderBottom = parseFloat(style.borderBottomWidth);
-
-      const totalExtraHeight = paddingTop + paddingBottom + borderTop + borderBottom;
-      const adjustedContentHeight = contentHeight + totalExtraHeight;
-
-      const newH = Math.ceil(adjustedContentHeight / rowHeight);
+      const newH = Math.max(4, Math.ceil(contentHeight / rowHeight));
       if (prevH.current !== newH) {
         onHeightChange(id, newH);
         prevH.current = newH;
