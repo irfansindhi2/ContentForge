@@ -24,11 +24,12 @@ function WebsiteBuilder() {
   const [contextMenu, setContextMenu] = useState(null);
   const [editingWidget, setEditingWidget] = useState(null);
   const [draggedWidgetPosition, setDraggedWidgetPosition] = useState(null);
-  const [currentBreakpoint, setCurrentBreakpoint] = useState('lg');
-  const cols = { lg: 24, md: 20, sm: 12, xs: 8, xxs: 4 };
-  const totalColumns = cols[currentBreakpoint];
 
   const previousHeaderHeightRef = useRef(0);
+  const [currentBreakpoint, setCurrentBreakpoint] = useState('lg');
+
+  const cols = { lg: 24, md: 20, sm: 12, xs: 8, xxs: 4 };
+  const [totalColumns, setTotalColumns] = useState(cols[currentBreakpoint]);
 
   const rowHeight = 15;
 
@@ -50,7 +51,7 @@ function WebsiteBuilder() {
       i: `${type}-${Date.now()}`,
       x: 0,
       y: 0, // Place header at the top
-      w: type === 'Header' ? totalColumns : 6,
+      w: type === 'Header' || type === 'Footer' ? totalColumns : 6,
       h: 4, // Default height
       type: type,
       content: defaultContent[type],
@@ -69,6 +70,18 @@ function WebsiteBuilder() {
 
       // Set the new widgets with adjusted positions and the new header widget
       setWidgets([newWidget, ...adjustedWidgets]);
+    } else if (type === 'Footer') {
+      // Calculate the maximum y position among existing widgets
+      const maxY = widgets.reduce((acc, widget) => {
+        return Math.max(acc, widget.y + widget.h);
+      }, 0);
+
+      const newWidgetWithAdjustedY = {
+        ...newWidget,
+        y: maxY, // Place footer below all widgets
+      };
+
+      setWidgets([...widgets, newWidgetWithAdjustedY]);
     } else {
       const headerWidget = widgets.find((widget) => widget.type === 'Header');
       const headerHeight = headerWidget ? headerWidget.h : 0;
@@ -118,6 +131,7 @@ function WebsiteBuilder() {
 
   const onLayoutChange = (layout) => {
     const headerWidget = widgets.find((widget) => widget.type === 'Header');
+    const footerWidget = widgets.find((widget) => widget.type === 'Footer');
 
     if (headerWidget) {
       const headerItem = layout.find((item) => item.i === headerWidget.i);
@@ -139,15 +153,38 @@ function WebsiteBuilder() {
           return updatedPosition ? { ...widget, ...updatedPosition } : widget;
         })
       );
-    } else {
-      previousHeaderHeightRef.current = 0;
-      setWidgets(
-        widgets.map((widget) => {
-          const updatedPosition = layout.find((item) => item.i === widget.i);
-          return updatedPosition ? { ...widget, ...updatedPosition } : widget;
-        })
-      );
     }
+
+    if (footerWidget) {
+      // Find maximum y position excluding the footer
+      const maxY = layout.reduce((acc, item) => {
+        if (item.i !== footerWidget.i) {
+          return Math.max(acc, item.y + item.h);
+        }
+        return acc;
+      }, 0);
+
+      // Update the footer's position in the layout
+      const footerItemIndex = layout.findIndex((item) => item.i === footerWidget.i);
+      if (footerItemIndex !== -1) {
+        layout[footerItemIndex].y = maxY; // Place footer below all widgets
+      } else {
+        // If footer is not in layout, add it
+        layout.push({
+          i: footerWidget.i,
+          x: 0,
+          y: maxY,
+          w: totalColumns,
+          h: footerWidget.h,
+        });
+      }
+    }
+    setWidgets(
+      widgets.map((widget) => {
+        const updatedPosition = layout.find((item) => item.i === widget.i);
+        return updatedPosition ? { ...widget, ...updatedPosition } : widget;
+      })
+    );
   };
 
   const downloadCurrentLayout = () => {
@@ -298,6 +335,11 @@ function WebsiteBuilder() {
     });
   };
 
+  const onBreakpointChange = (breakpoint) => {
+    setCurrentBreakpoint(breakpoint);
+    setTotalColumns(cols[breakpoint]);
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="website-builder" onClick={closeContextMenu}>
@@ -316,7 +358,7 @@ function WebsiteBuilder() {
           <ResponsiveGridLayout
             className="layout"
             layouts={{ lg: widgets }}
-            onBreakpointChange={(breakpoint) => setCurrentBreakpoint(breakpoint)}
+            onBreakpointChange={onBreakpointChange}
             cols={cols}
             rowHeight={15}
             width={1200}
@@ -326,7 +368,7 @@ function WebsiteBuilder() {
             isDraggable={true}
             containerPadding={[0, 0]}
             margin={[0, 0]}
-            compactType={null}
+            compactType="vertical"
             preventCollision={true}
             useCSSTransforms={true}
             draggableHandle=".widget-drag-handle"
@@ -345,13 +387,14 @@ function WebsiteBuilder() {
               }[widget.type];
 
               const isHeader = widget.type === 'Header';
+              const isFooter = widget.type === 'Footer';
 
               const gridData = {
                 ...widget,
-                isDraggable: !isHeader,
+                isDraggable: !isHeader && !isFooter,
                 isResizable: true,
-                minW: isHeader ? totalColumns : 1,
-                maxW: isHeader ? totalColumns : undefined,
+                minW: isHeader || isFooter ? totalColumns : 1,
+                maxW: isHeader || isFooter ? totalColumns : undefined,
                 minH: widget.minH || 1,
               };
 
