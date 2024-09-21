@@ -112,11 +112,6 @@ function HighlightWidget({
       >
         Add Article
       </button>
-      <div className="highlight-toolbar">
-        <button onClick={() => setIsEditing(!isEditing)}>
-          {isEditing ? 'Done' : 'Edit'}
-        </button>
-      </div>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
