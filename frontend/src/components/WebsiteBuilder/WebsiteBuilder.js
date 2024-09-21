@@ -218,11 +218,18 @@ function WebsiteBuilder() {
 
   // Callback to handle height changes from widgets
   const handleWidgetHeightChange = (id, newH) => {
-    setWidgets((prevWidgets) =>
-      prevWidgets.map((widget) =>
-        widget.i === id && widget.h !== newH ? { ...widget, h: newH } : widget
-      )
-    );
+    setWidgets((prevWidgets) => {
+      let changed = false;
+      const updatedWidgets = prevWidgets.map((widget) => {
+        if (widget.i === id && widget.h !== newH) {
+          changed = true;
+          return { ...widget, h: newH };
+        }
+        return widget;
+      });
+      // Only update state if something has changed
+      return changed ? updatedWidgets : prevWidgets;
+    });
   };
 
   return (

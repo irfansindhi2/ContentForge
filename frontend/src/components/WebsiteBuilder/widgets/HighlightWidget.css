@@ -2,6 +2,7 @@
   position: relative;
   border: 2px dashed #ccc;
   padding: 10px;
+  box-sizing: border-box;
 }
 
 .add-article-button {

@@ -20,6 +20,7 @@ function HighlightWidget({
 }) {
   const [widgets, setWidgets] = useState(content.widgets || []);
   const contentRef = useRef(null);
+  const prevH = useRef();
 
   useEffect(() => {
     setWidgets(content.widgets || []);
@@ -29,7 +30,12 @@ function HighlightWidget({
     if (contentRef.current) {
       const contentHeight = contentRef.current.offsetHeight;
       const newH = Math.ceil(contentHeight / rowHeight);
-      onHeightChange(id, newH);
+      
+      // Only call onHeightChange if newH has changed
+      if (prevH.current !== newH) {
+        onHeightChange(id, newH);
+        prevH.current = newH;
+      }
     }
   }, [widgets, onHeightChange, id, rowHeight]);
 
