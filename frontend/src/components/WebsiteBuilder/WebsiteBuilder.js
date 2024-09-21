@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Responsive, WidthProvider } from 'react-grid-layout';
@@ -25,9 +25,14 @@ function WebsiteBuilder() {
   const [editingWidget, setEditingWidget] = useState(null);
   const [draggedWidgetPosition, setDraggedWidgetPosition] = useState(null);
 
+  const previousHeaderHeightRef = useRef(0);
+  const totalColumns = 24;
+
   const rowHeight = 15;
 
   const addWidget = (type) => {
+    const headerWidget = widgets.find((widget) => widget.type === 'Header');
+    const headerHeight = headerWidget ? headerWidget.h : 0;
     const defaultContent = {
       Header: { title: 'Welcome', subtitle: 'to our website', backgroundColor: '#f8f9fa', textColor: '#333333', alignment: 'center' },
       Footer: { copyright: '© 2023 Your Company', links: [], backgroundColor: '#f8f9fa', textColor: '#333333' },
@@ -42,13 +47,37 @@ function WebsiteBuilder() {
     const newWidget = {
       i: `${type}-${Date.now()}`,
       x: 0,
-      y: 0,
-      w: 6,
-      h: 4,
+      y: 0, // Place header at the top
+      w: type === 'Header' ? totalColumns : 6, // Full width for header
+      h: 4, // Default height
       type: type,
-      content: defaultContent[type]
+      content: defaultContent[type],
     };
-    setWidgets([...widgets, newWidget]);
+  
+    if (type === 'Header') {
+      const headerHeight = newWidget.h;
+  
+      // Adjust y positions of existing widgets
+      const adjustedWidgets = widgets.map((widget) => {
+        return {
+          ...widget,
+          y: widget.y + headerHeight,
+        };
+      });
+  
+      // Set the new widgets with adjusted positions and the new header widget
+      setWidgets([newWidget, ...adjustedWidgets]);
+    } else {
+      const headerWidget = widgets.find((widget) => widget.type === 'Header');
+      const headerHeight = headerWidget ? headerWidget.h : 0;
+  
+      const newWidgetWithAdjustedY = {
+        ...newWidget,
+        y: headerHeight, // Place new widgets below the header
+      };
+  
+      setWidgets([...widgets, newWidgetWithAdjustedY]);
+    }
   };
 
   const updateWidget = (id, content) => {
@@ -86,10 +115,37 @@ function WebsiteBuilder() {
   };
 
   const onLayoutChange = (layout) => {
-    setWidgets(widgets.map(widget => {
-      const updatedPosition = layout.find(item => item.i === widget.i);
-      return updatedPosition ? { ...widget, ...updatedPosition } : widget;
-    }));
+    const headerWidget = widgets.find((widget) => widget.type === 'Header');
+  
+    if (headerWidget) {
+      const headerItem = layout.find((item) => item.i === headerWidget.i);
+      const headerHeight = headerItem ? headerItem.h : headerWidget.h;
+  
+      const deltaHeaderHeight = headerHeight - previousHeaderHeightRef.current;
+      previousHeaderHeightRef.current = headerHeight;
+  
+      const adjustedLayout = layout.map((item) => {
+        if (item.i !== headerWidget.i) {
+          return { ...item, y: item.y + deltaHeaderHeight };
+        }
+        return item;
+      });
+  
+      setWidgets(
+        widgets.map((widget) => {
+          const updatedPosition = adjustedLayout.find((item) => item.i === widget.i);
+          return updatedPosition ? { ...widget, ...updatedPosition } : widget;
+        })
+      );
+    } else {
+      previousHeaderHeightRef.current = 0;
+      setWidgets(
+        widgets.map((widget) => {
+          const updatedPosition = layout.find((item) => item.i === widget.i);
+          return updatedPosition ? { ...widget, ...updatedPosition } : widget;
+        })
+      );
+    }
   };
 
   const downloadCurrentLayout = () => {
@@ -278,10 +334,20 @@ function WebsiteBuilder() {
                 Highlight: HighlightWidget,
               }[widget.type];
 
+              const isHeader = widget.type === 'Header';
+
+              const gridData = {
+                ...widget,
+                isDraggable: !isHeader,
+                isResizable: true,
+                minW: isHeader ? totalColumns : 1,
+                maxW: isHeader ? totalColumns : undefined,
+              };
+
               return (
                 <div
                   key={widget.i}
-                  data-grid={widget}
+                  data-grid={gridData}
                   style={{ width: '100%', height: 'auto' }}
                 >
                   <WidgetComponent
