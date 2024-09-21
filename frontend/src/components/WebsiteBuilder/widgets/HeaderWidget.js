@@ -10,7 +10,9 @@ function HeaderWidget({
   isEditing,
   setIsEditing,
   onContextMenu,
+  onHeightChange,
   draggedPosition,
+  rowHeight
 }) {
   const widgetRef = useRef(null);
   const formRef = useRef(null);
@@ -63,6 +65,15 @@ function HeaderWidget({
       closeForm();
     }
   };
+
+  useEffect(() => {
+    if (widgetRef.current) {
+      const widgetHeight = widgetRef.current.offsetHeight; // Height in pixels
+      const newH = Math.ceil(widgetHeight / rowHeight);
+      onHeightChange(id, newH);
+    }
+  }, [content, rowHeight]);
+  
 
   return (
     <div 
