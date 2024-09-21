@@ -24,9 +24,11 @@ function WebsiteBuilder() {
   const [contextMenu, setContextMenu] = useState(null);
   const [editingWidget, setEditingWidget] = useState(null);
   const [draggedWidgetPosition, setDraggedWidgetPosition] = useState(null);
+  const [currentBreakpoint, setCurrentBreakpoint] = useState('lg');
+  const cols = { lg: 24, md: 20, sm: 12, xs: 8, xxs: 4 };
+  const totalColumns = cols[currentBreakpoint];
 
   const previousHeaderHeightRef = useRef(0);
-  const totalColumns = 24;
 
   const rowHeight = 15;
 
@@ -48,15 +50,15 @@ function WebsiteBuilder() {
       i: `${type}-${Date.now()}`,
       x: 0,
       y: 0, // Place header at the top
-      w: type === 'Header' ? totalColumns : 6, // Full width for header
+      w: type === 'Header' ? totalColumns : 6,
       h: 4, // Default height
       type: type,
       content: defaultContent[type],
     };
-  
+
     if (type === 'Header') {
       const headerHeight = newWidget.h;
-  
+
       // Adjust y positions of existing widgets
       const adjustedWidgets = widgets.map((widget) => {
         return {
@@ -64,18 +66,18 @@ function WebsiteBuilder() {
           y: widget.y + headerHeight,
         };
       });
-  
+
       // Set the new widgets with adjusted positions and the new header widget
       setWidgets([newWidget, ...adjustedWidgets]);
     } else {
       const headerWidget = widgets.find((widget) => widget.type === 'Header');
       const headerHeight = headerWidget ? headerWidget.h : 0;
-  
+
       const newWidgetWithAdjustedY = {
         ...newWidget,
         y: headerHeight, // Place new widgets below the header
       };
-  
+
       setWidgets([...widgets, newWidgetWithAdjustedY]);
     }
   };
@@ -116,21 +118,21 @@ function WebsiteBuilder() {
 
   const onLayoutChange = (layout) => {
     const headerWidget = widgets.find((widget) => widget.type === 'Header');
-  
+
     if (headerWidget) {
       const headerItem = layout.find((item) => item.i === headerWidget.i);
       const headerHeight = headerItem ? headerItem.h : headerWidget.h;
-  
+
       const deltaHeaderHeight = headerHeight - previousHeaderHeightRef.current;
       previousHeaderHeightRef.current = headerHeight;
-  
+
       const adjustedLayout = layout.map((item) => {
         if (item.i !== headerWidget.i) {
           return { ...item, y: item.y + deltaHeaderHeight };
         }
         return item;
       });
-  
+
       setWidgets(
         widgets.map((widget) => {
           const updatedPosition = adjustedLayout.find((item) => item.i === widget.i);
@@ -314,8 +316,8 @@ function WebsiteBuilder() {
           <ResponsiveGridLayout
             className="layout"
             layouts={{ lg: widgets }}
-            breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-            cols={{ lg: 24, md: 20, sm: 12, xs: 8, xxs: 4 }}
+            onBreakpointChange={(breakpoint) => setCurrentBreakpoint(breakpoint)}
+            cols={cols}
             rowHeight={15}
             width={1200}
             onLayoutChange={onLayoutChange}
