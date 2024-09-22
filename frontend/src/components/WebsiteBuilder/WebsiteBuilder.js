@@ -51,7 +51,7 @@ function WebsiteBuilder() {
     const newWidget = {
       i: `${type}-${Date.now()}`,
       x: 0,
-      y: 0, // We'll adjust this later
+      y: Infinity,
       w: type === 'Header' || type === 'Footer' ? totalColumns : 6,
       h: 4, // Default height
       type: type,
@@ -76,7 +76,7 @@ function WebsiteBuilder() {
     } else {
       // For other widgets, place them directly below the header
       newWidget.y = headerHeight;
-      
+
       // Adjust y positions of existing widgets below the header
       updatedWidgets = widgets.map((widget) => {
         if (widget.type !== 'Header' && widget.y >= headerHeight) {
@@ -84,7 +84,7 @@ function WebsiteBuilder() {
         }
         return widget;
       });
-      
+
       // Insert the new widget after the header
       const insertIndex = headerWidget ? widgets.indexOf(headerWidget) + 1 : 0;
       updatedWidgets.splice(insertIndex, 0, newWidget);
@@ -130,47 +130,34 @@ function WebsiteBuilder() {
   const onLayoutChange = (layout) => {
     const headerWidget = layout.find((item) => item.i.startsWith('Header-'));
     const footerWidget = layout.find((item) => item.i.startsWith('Footer-'));
-    
+
     if (headerWidget) {
       headerWidget.y = 0;
     }
 
     // Sort layout by y position, then by x position
-    const sortedLayout = layout.sort((a, b) => {
+    const sortedLayout = [...layout].sort((a, b) => {
       if (a.y === b.y) return a.x - b.x;
       return a.y - b.y;
     });
 
-    let currentY = headerWidget ? headerWidget.h : 0;
-    let currentRow = [];
-    let maxHeightInRow = 0;
-
-    // Adjust positions of widgets
+    // Find the maximum y + h value for all widgets except the footer
+    let maxY = 0;
     sortedLayout.forEach((item) => {
-      if (item.i !== headerWidget?.i && item.i !== footerWidget?.i) {
-        if (currentRow.length === 0 || item.x >= currentRow[currentRow.length - 1].x + currentRow[currentRow.length - 1].w) {
-          // Add to current row
-          item.y = currentY;
-          currentRow.push(item);
-          maxHeightInRow = Math.max(maxHeightInRow, item.h);
-        } else {
-          // Start a new row
-          currentY += maxHeightInRow;
-          item.y = currentY;
-          currentRow = [item];
-          maxHeightInRow = item.h;
-        }
+      if (item.i !== footerWidget?.i) {
+        maxY = Math.max(maxY, item.y + item.h);
       }
     });
 
+    // Place the footer at the bottom if it exists
     if (footerWidget) {
-      footerWidget.y = currentY + maxHeightInRow;
+      footerWidget.y = maxY;
     }
 
     setWidgets(
-      widgets.map((widget) => {
-        const updatedPosition = sortedLayout.find((item) => item.i === widget.i);
-        return updatedPosition ? { ...widget, ...updatedPosition } : widget;
+      layout.map(item => {
+        const widget = widgets.find(w => w.i === item.i);
+        return widget ? { ...widget, x: item.x, y: item.y, w: item.w, h: item.h } : widget;
       })
     );
   };
@@ -294,46 +281,28 @@ function WebsiteBuilder() {
   const onDrag = (layout, oldItem, newItem) => {
     const headerWidget = layout.find((item) => item.i.startsWith('Header-'));
     const footerWidget = layout.find((item) => item.i.startsWith('Footer-'));
-    
+
     if (headerWidget) {
       headerWidget.y = 0;
     }
 
     // Sort layout by y position, then by x position
-    const sortedLayout = layout.sort((a, b) => {
+    const sortedLayout = [...layout].sort((a, b) => {
       if (a.y === b.y) return a.x - b.x;
       return a.y - b.y;
     });
 
-    let currentY = headerWidget ? headerWidget.h : 0;
-    let currentRow = [];
-    let maxHeightInRow = 0;
-
-    // Adjust positions of widgets
+    // Find the maximum y + h value for all widgets except the footer
+    let maxY = 0;
     sortedLayout.forEach((item) => {
-      if (item.i !== headerWidget?.i && item.i !== footerWidget?.i) {
-        if (item.i === newItem.i) {
-          // Allow the dragged item to be placed freely
-          currentY = item.y;
-        } else {
-          if (currentRow.length === 0 || item.x >= currentRow[currentRow.length - 1].x + currentRow[currentRow.length - 1].w) {
-            // Add to current row
-            item.y = currentY;
-            currentRow.push(item);
-            maxHeightInRow = Math.max(maxHeightInRow, item.h);
-          } else {
-            // Start a new row
-            currentY += maxHeightInRow;
-            item.y = currentY;
-            currentRow = [item];
-            maxHeightInRow = item.h;
-          }
-        }
+      if (item.i !== footerWidget?.i) {
+        maxY = Math.max(maxY, item.y + item.h);
       }
     });
 
+    // Place the footer at the bottom if it exists
     if (footerWidget) {
-      footerWidget.y = currentY + maxHeightInRow;
+      footerWidget.y = maxY;
     }
 
     setDraggedWidgetPosition({
@@ -400,7 +369,7 @@ function WebsiteBuilder() {
             isDraggable={true}
             containerPadding={[0, 0]}
             margin={[0, 0]}
-            compactType={null}
+            compactType="vertical"
             preventCollision={false}
             useCSSTransforms={true}
             draggableHandle=".widget-drag-handle"
