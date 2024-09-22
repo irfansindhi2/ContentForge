@@ -133,32 +133,43 @@ function WebsiteBuilder() {
     
     if (headerWidget) {
       headerWidget.y = 0;
-      
-      // Adjust other widgets if they overlap with the header
-      const headerHeight = headerWidget.h;
-      layout.forEach((item) => {
-        if (item.i !== headerWidget.i && item.y < headerHeight) {
-          item.y = headerHeight;
-        }
-      });
     }
 
-    if (footerWidget) {
-      // Find the maximum y position of non-footer widgets
-      const maxY = layout.reduce((max, item) => {
-        if (item.i !== footerWidget.i) {
-          return Math.max(max, item.y + item.h);
-        }
-        return max;
-      }, 0);
+    // Sort layout by y position, then by x position
+    const sortedLayout = layout.sort((a, b) => {
+      if (a.y === b.y) return a.x - b.x;
+      return a.y - b.y;
+    });
 
-      // Set footer position just below the highest widget
-      footerWidget.y = maxY;
+    let currentY = headerWidget ? headerWidget.h : 0;
+    let currentRow = [];
+    let maxHeightInRow = 0;
+
+    // Adjust positions of widgets
+    sortedLayout.forEach((item) => {
+      if (item.i !== headerWidget?.i && item.i !== footerWidget?.i) {
+        if (currentRow.length === 0 || item.x >= currentRow[currentRow.length - 1].x + currentRow[currentRow.length - 1].w) {
+          // Add to current row
+          item.y = currentY;
+          currentRow.push(item);
+          maxHeightInRow = Math.max(maxHeightInRow, item.h);
+        } else {
+          // Start a new row
+          currentY += maxHeightInRow;
+          item.y = currentY;
+          currentRow = [item];
+          maxHeightInRow = item.h;
+        }
+      }
+    });
+
+    if (footerWidget) {
+      footerWidget.y = currentY + maxHeightInRow;
     }
 
     setWidgets(
       widgets.map((widget) => {
-        const updatedPosition = layout.find((item) => item.i === widget.i);
+        const updatedPosition = sortedLayout.find((item) => item.i === widget.i);
         return updatedPosition ? { ...widget, ...updatedPosition } : widget;
       })
     );
@@ -286,24 +297,43 @@ function WebsiteBuilder() {
     
     if (headerWidget) {
       headerWidget.y = 0;
-      
-      // Prevent other widgets from being placed above the header
-      if (newItem.i !== headerWidget.i && newItem.y < headerWidget.h) {
-        newItem.y = headerWidget.h;
-      }
     }
 
-    if (footerWidget) {
-      // Find the maximum y position of non-footer widgets
-      const maxY = layout.reduce((max, item) => {
-        if (item.i !== footerWidget.i) {
-          return Math.max(max, item.y + item.h);
-        }
-        return max;
-      }, 0);
+    // Sort layout by y position, then by x position
+    const sortedLayout = layout.sort((a, b) => {
+      if (a.y === b.y) return a.x - b.x;
+      return a.y - b.y;
+    });
 
-      // Set footer position just below the highest widget
-      footerWidget.y = maxY;
+    let currentY = headerWidget ? headerWidget.h : 0;
+    let currentRow = [];
+    let maxHeightInRow = 0;
+
+    // Adjust positions of widgets
+    sortedLayout.forEach((item) => {
+      if (item.i !== headerWidget?.i && item.i !== footerWidget?.i) {
+        if (item.i === newItem.i) {
+          // Allow the dragged item to be placed freely
+          currentY = item.y;
+        } else {
+          if (currentRow.length === 0 || item.x >= currentRow[currentRow.length - 1].x + currentRow[currentRow.length - 1].w) {
+            // Add to current row
+            item.y = currentY;
+            currentRow.push(item);
+            maxHeightInRow = Math.max(maxHeightInRow, item.h);
+          } else {
+            // Start a new row
+            currentY += maxHeightInRow;
+            item.y = currentY;
+            currentRow = [item];
+            maxHeightInRow = item.h;
+          }
+        }
+      }
+    });
+
+    if (footerWidget) {
+      footerWidget.y = currentY + maxHeightInRow;
     }
 
     setDraggedWidgetPosition({
