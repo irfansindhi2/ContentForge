@@ -130,44 +130,34 @@ function WebsiteBuilder() {
   };
 
   const onLayoutChange = (layout) => {
-    const headerWidget = widgets.find((widget) => widget.type === 'Header');
-    const footerWidget = widgets.find((widget) => widget.type === 'Footer');
-
+    const headerWidget = layout.find((item) => item.i.startsWith('Header-'));
     if (headerWidget) {
-      const headerItem = layout.find((item) => item.i === headerWidget.i);
-      const headerHeight = headerItem ? headerItem.h : headerWidget.h;
-
-      const deltaHeaderHeight = headerHeight - previousHeaderHeightRef.current;
-      previousHeaderHeightRef.current = headerHeight;
-
-      const adjustedLayout = layout.map((item) => {
-        if (item.i !== headerWidget.i) {
-          return { ...item, y: item.y + deltaHeaderHeight };
+      headerWidget.y = 0;
+      
+      // Adjust other widgets if they overlap with the header
+      const headerHeight = headerWidget.h;
+      layout.forEach((item) => {
+        if (item.i !== headerWidget.i && item.y < headerHeight) {
+          item.y = headerHeight;
         }
-        return item;
       });
-
-      setWidgets(
-        widgets.map((widget) => {
-          const updatedPosition = adjustedLayout.find((item) => item.i === widget.i);
-          return updatedPosition ? { ...widget, ...updatedPosition } : widget;
-        })
-      );
     }
+
+    const footerWidget = widgets.find((widget) => widget.type === 'Footer');
 
     if (footerWidget) {
       // Find maximum y position excluding the footer
       const maxY = layout.reduce((acc, item) => {
-        if (item.i !== footerWidget.i) {
+        if (!item.i.startsWith('Footer-')) {
           return Math.max(acc, item.y + item.h);
         }
         return acc;
       }, 0);
 
       // Update the footer's position in the layout
-      const footerItemIndex = layout.findIndex((item) => item.i === footerWidget.i);
-      if (footerItemIndex !== -1) {
-        layout[footerItemIndex].y = maxY; // Place footer below all widgets
+      const footerItem = layout.find((item) => item.i.startsWith('Footer-'));
+      if (footerItem) {
+        footerItem.y = maxY; // Place footer below all widgets
       } else {
         // If footer is not in layout, add it
         layout.push({
@@ -179,6 +169,7 @@ function WebsiteBuilder() {
         });
       }
     }
+
     setWidgets(
       widgets.map((widget) => {
         const updatedPosition = layout.find((item) => item.i === widget.i);
@@ -304,6 +295,16 @@ function WebsiteBuilder() {
   };
 
   const onDrag = (layout, oldItem, newItem) => {
+    const headerWidget = layout.find((item) => item.i.startsWith('Header-'));
+    if (headerWidget) {
+      headerWidget.y = 0;
+      
+      // Prevent other widgets from being placed above the header
+      if (newItem.i !== headerWidget.i && newItem.y < headerWidget.h) {
+        newItem.y = headerWidget.h;
+      }
+    }
+
     setDraggedWidgetPosition({
       id: newItem.i,
       x: newItem.x,
@@ -368,11 +369,12 @@ function WebsiteBuilder() {
             isDraggable={true}
             containerPadding={[0, 0]}
             margin={[0, 0]}
-            compactType="vertical"
-            preventCollision={true}
+            compactType={null}
+            preventCollision={false}
             useCSSTransforms={true}
             draggableHandle=".widget-drag-handle"
             draggableCancel=".nested-draggable"
+            isDroppable={false}
           >
             {widgets.map(widget => {
               const WidgetComponent = {
@@ -391,8 +393,9 @@ function WebsiteBuilder() {
 
               const gridData = {
                 ...widget,
-                isDraggable: !isHeader && !isFooter,
+                isDraggable: !isHeader,
                 isResizable: true,
+                y: isHeader ? 0 : widget.y,
                 minW: isHeader || isFooter ? totalColumns : 1,
                 maxW: isHeader || isFooter ? totalColumns : undefined,
                 minH: widget.minH || 1,
@@ -402,7 +405,7 @@ function WebsiteBuilder() {
                 <div
                   key={widget.i}
                   data-grid={gridData}
-                  style={{ width: '100%', height: 'auto' }}
+                  className={`widget-container ${isHeader ? 'header-widget' : ''}`}
                 >
                   <WidgetComponent
                     id={widget.i}
