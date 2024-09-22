@@ -131,6 +131,8 @@ function WebsiteBuilder() {
 
   const onLayoutChange = (layout) => {
     const headerWidget = layout.find((item) => item.i.startsWith('Header-'));
+    const footerWidget = layout.find((item) => item.i.startsWith('Footer-'));
+    
     if (headerWidget) {
       headerWidget.y = 0;
       
@@ -143,31 +145,17 @@ function WebsiteBuilder() {
       });
     }
 
-    const footerWidget = widgets.find((widget) => widget.type === 'Footer');
-
     if (footerWidget) {
-      // Find maximum y position excluding the footer
-      const maxY = layout.reduce((acc, item) => {
-        if (!item.i.startsWith('Footer-')) {
-          return Math.max(acc, item.y + item.h);
+      // Find the maximum y position of non-footer widgets
+      const maxY = layout.reduce((max, item) => {
+        if (item.i !== footerWidget.i) {
+          return Math.max(max, item.y + item.h);
         }
-        return acc;
+        return max;
       }, 0);
 
-      // Update the footer's position in the layout
-      const footerItem = layout.find((item) => item.i.startsWith('Footer-'));
-      if (footerItem) {
-        footerItem.y = maxY; // Place footer below all widgets
-      } else {
-        // If footer is not in layout, add it
-        layout.push({
-          i: footerWidget.i,
-          x: 0,
-          y: maxY,
-          w: totalColumns,
-          h: footerWidget.h,
-        });
-      }
+      // Set footer position just below the highest widget
+      footerWidget.y = maxY;
     }
 
     setWidgets(
@@ -296,6 +284,8 @@ function WebsiteBuilder() {
 
   const onDrag = (layout, oldItem, newItem) => {
     const headerWidget = layout.find((item) => item.i.startsWith('Header-'));
+    const footerWidget = layout.find((item) => item.i.startsWith('Footer-'));
+    
     if (headerWidget) {
       headerWidget.y = 0;
       
@@ -303,6 +293,19 @@ function WebsiteBuilder() {
       if (newItem.i !== headerWidget.i && newItem.y < headerWidget.h) {
         newItem.y = headerWidget.h;
       }
+    }
+
+    if (footerWidget) {
+      // Find the maximum y position of non-footer widgets
+      const maxY = layout.reduce((max, item) => {
+        if (item.i !== footerWidget.i) {
+          return Math.max(max, item.y + item.h);
+        }
+        return max;
+      }, 0);
+
+      // Set footer position just below the highest widget
+      footerWidget.y = maxY;
     }
 
     setDraggedWidgetPosition({
