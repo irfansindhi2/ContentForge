@@ -36,6 +36,7 @@ function WebsiteBuilder() {
   const addWidget = (type) => {
     const headerWidget = widgets.find((widget) => widget.type === 'Header');
     const headerHeight = headerWidget ? headerWidget.h : 0;
+
     const defaultContent = {
       Header: { title: 'Welcome', subtitle: 'to our website', backgroundColor: '#f8f9fa', textColor: '#333333', alignment: 'center' },
       Footer: { copyright: '© 2023 Your Company', links: [], backgroundColor: '#f8f9fa', textColor: '#333333' },
@@ -50,49 +51,46 @@ function WebsiteBuilder() {
     const newWidget = {
       i: `${type}-${Date.now()}`,
       x: 0,
-      y: 0, // Place header at the top
+      y: 0, // We'll adjust this later
       w: type === 'Header' || type === 'Footer' ? totalColumns : 6,
       h: 4, // Default height
       type: type,
       content: defaultContent[type],
     };
 
+    let updatedWidgets;
+
     if (type === 'Header') {
-      const headerHeight = newWidget.h;
-
+      newWidget.y = 0;
       // Adjust y positions of existing widgets
-      const adjustedWidgets = widgets.map((widget) => {
-        return {
-          ...widget,
-          y: widget.y + headerHeight,
-        };
-      });
-
-      // Set the new widgets with adjusted positions and the new header widget
-      setWidgets([newWidget, ...adjustedWidgets]);
+      updatedWidgets = widgets.map((widget) => ({
+        ...widget,
+        y: widget.y + newWidget.h,
+      }));
+      updatedWidgets = [newWidget, ...updatedWidgets];
     } else if (type === 'Footer') {
-      // Calculate the maximum y position among existing widgets
-      const maxY = widgets.reduce((acc, widget) => {
-        return Math.max(acc, widget.y + widget.h);
-      }, 0);
-
-      const newWidgetWithAdjustedY = {
-        ...newWidget,
-        y: maxY, // Place footer below all widgets
-      };
-
-      setWidgets([...widgets, newWidgetWithAdjustedY]);
+      // Find the maximum y position
+      const maxY = widgets.reduce((max, widget) => Math.max(max, widget.y + widget.h), 0);
+      newWidget.y = maxY;
+      updatedWidgets = [...widgets, newWidget];
     } else {
-      const headerWidget = widgets.find((widget) => widget.type === 'Header');
-      const headerHeight = headerWidget ? headerWidget.h : 0;
-
-      const newWidgetWithAdjustedY = {
-        ...newWidget,
-        y: headerHeight, // Place new widgets below the header
-      };
-
-      setWidgets([...widgets, newWidgetWithAdjustedY]);
+      // For other widgets, place them directly below the header
+      newWidget.y = headerHeight;
+      
+      // Adjust y positions of existing widgets below the header
+      updatedWidgets = widgets.map((widget) => {
+        if (widget.type !== 'Header' && widget.y >= headerHeight) {
+          return { ...widget, y: widget.y + newWidget.h };
+        }
+        return widget;
+      });
+      
+      // Insert the new widget after the header
+      const insertIndex = headerWidget ? widgets.indexOf(headerWidget) + 1 : 0;
+      updatedWidgets.splice(insertIndex, 0, newWidget);
     }
+
+    setWidgets(updatedWidgets);
   };
 
   const updateWidget = (id, content) => {
