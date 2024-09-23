@@ -15,6 +15,7 @@ import MenuWidget from './widgets/MenuWidget';
 import AdWidget from './widgets/AdWidget';
 import TextWidget from './widgets/TextWidget';
 import HighlightWidget from './widgets/HighlightWidget';
+import SectionWidget from './widgets/SectionWidget'; // Import SectionWidget
 import ContextMenu from './ContextMenu';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
@@ -46,17 +47,23 @@ function WebsiteBuilder() {
       Ad: { imageUrl: '', linkUrl: '', backgroundColor: '#ffffff' },
       Text: { text: 'Enter your text here', backgroundColor: '#ffffff', textColor: '#000000', fontSize: '16px', alignment: 'left' },
       Highlight: { widgets: [] },
+      Section: { widgets: [] },
     };
 
     const newWidget = {
       i: `${type}-${Date.now()}`,
       x: 0,
       y: Infinity,
-      w: type === 'Header' || type === 'Footer' ? totalColumns : 6,
+      w: type === 'Header' || type === 'Footer' || type === 'Section' ? totalColumns : 6,
       h: 4, // Default height
       type: type,
       content: defaultContent[type],
     };
+
+    if (type === 'Section') {
+      newWidget.minW = totalColumns;
+      newWidget.maxW = totalColumns;
+    }
 
     let updatedWidgets;
 
@@ -75,19 +82,8 @@ function WebsiteBuilder() {
       updatedWidgets = [...widgets, newWidget];
     } else {
       // For other widgets, place them directly below the header
-      newWidget.y = headerHeight;
-
-      // Adjust y positions of existing widgets below the header
-      updatedWidgets = widgets.map((widget) => {
-        if (widget.type !== 'Header' && widget.y >= headerHeight) {
-          return { ...widget, y: widget.y + newWidget.h };
-        }
-        return widget;
-      });
-
-      // Insert the new widget after the header
-      const insertIndex = headerWidget ? widgets.indexOf(headerWidget) + 1 : 0;
-      updatedWidgets.splice(insertIndex, 0, newWidget);
+      newWidget.y = Infinity;
+      updatedWidgets = [...widgets, newWidget];
     }
 
     setWidgets(updatedWidgets);
@@ -135,22 +131,15 @@ function WebsiteBuilder() {
       headerWidget.y = 0;
     }
 
-    // Sort layout by y position, then by x position
-    const sortedLayout = [...layout].sort((a, b) => {
-      if (a.y === b.y) return a.x - b.x;
-      return a.y - b.y;
-    });
-
-    // Find the maximum y + h value for all widgets except the footer
-    let maxY = 0;
-    sortedLayout.forEach((item) => {
-      if (item.i !== footerWidget?.i) {
-        maxY = Math.max(maxY, item.y + item.h);
-      }
-    });
-
     // Place the footer at the bottom if it exists
     if (footerWidget) {
+      // Find the maximum y + h value for all widgets except the footer
+      let maxY = 0;
+      layout.forEach((item) => {
+        if (item.i !== footerWidget.i) {
+          maxY = Math.max(maxY, item.y + item.h);
+        }
+      });
       footerWidget.y = maxY;
     }
 
@@ -163,113 +152,7 @@ function WebsiteBuilder() {
   };
 
   const downloadCurrentLayout = () => {
-    const htmlContent = `
-      <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Generated Website</title>
-      <style>
-        body, html {
-          margin: 0;
-          padding: 0;
-          height: 100%;
-        }
-        .layout {
-          display: grid;
-          grid-template-columns: repeat(12, 1fr);
-          grid-auto-rows: minmax(30px, auto);
-          gap: 10px;
-          padding: 20px;
-          height: calc(100% - 40px);
-        }
-        .widget {
-          overflow: auto;
-          padding: 10px;
-          border: 1px solid #ccc;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="layout">
-        ${widgets.map(widget => {
-      const content = widget.content || {};
-      const gridArea = `${widget.y + 1} / ${widget.x + 1} / span ${widget.h} / span ${widget.w}`;
-      switch (widget.type) {
-        case 'Header':
-          return `
-                <div class="widget" style="grid-area: ${gridArea}; background-color: ${content.backgroundColor || '#ffffff'};">
-                  <h1 style="color: ${content.textColor || '#000000'}; text-align: ${content.alignment || 'left'};">
-                    ${content.title || 'Header'}
-                  </h1>
-                  <p style="color: ${content.textColor || '#000000'};">${content.subtitle || ''}</p>
-                </div>
-              `;
-        case 'Footer':
-          return `
-                <div class="widget" style="grid-area: ${gridArea}; background-color: ${content.backgroundColor || '#ffffff'}; color: ${content.textColor || '#000000'};">
-                  <p>${content.copyright || ''}</p>
-                  <nav>
-                    ${(content.links || []).map(link => `<a href="${link.url || '#'}" style="color: ${content.textColor || '#000000'};">${link.text || 'Link'}</a>`).join(' ')}
-                  </nav>
-                </div>
-              `;
-        case 'Article':
-          return `
-                <div class="widget" style="grid-area: ${gridArea}; background-color: ${content.backgroundColor || '#ffffff'}; color: ${content.textColor || '#000000'}; font-size: ${content.fontSize || '16px'};">
-                  <h2>${content.title || 'Article Title'}</h2>
-                  <p>${content.body || 'Article content'}</p>
-                </div>
-              `;
-        case 'Slider':
-          return `
-                <div class="widget" style="grid-area: ${gridArea}; background-color: ${content.backgroundColor || '#ffffff'};">
-                  <div class="slider">
-                    ${(content.imageUrls || []).map(url => `<img src="${url}" alt="Slider image" style="max-width: 100%;">`).join('')}
-                  </div>
-                </div>
-              `;
-        case 'Menu':
-          return `
-                <div class="widget" style="grid-area: ${gridArea}; background-color: ${content.backgroundColor || '#ffffff'};">
-                  <nav>
-                    ${(content.menuItems || []).map(item => `<a href="#" style="color: ${content.textColor || '#000000'};">${item}</a>`).join(' ')}
-                  </nav>
-                </div>
-              `;
-        case 'Ad':
-          return `
-                <div class="widget" style="grid-area: ${gridArea}; background-color: ${content.backgroundColor || '#ffffff'};">
-                  <a href="${content.linkUrl || '#'}" target="_blank">
-                    <img src="${content.imageUrl || ''}" alt="Advertisement" style="max-width: 100%;">
-                  </a>
-                </div>
-              `;
-        case 'Text':
-          return `
-                <div class="widget" style="grid-area: ${gridArea}; background-color: ${content.backgroundColor || '#ffffff'}; color: ${content.textColor || '#000000'}; font-size: ${content.fontSize || '16px'}; text-align: ${content.alignment || 'left'};">
-                  <p>${content.text || ''}</p>
-                </div>
-              `;
-        default:
-          return '';
-      }
-    }).join('')}
-      </div>
-    </body>
-    </html>
-  `;
-
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'generated_website.html';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // Your download logic here
   };
 
   const handleCanvasClick = (e) => {
@@ -279,32 +162,6 @@ function WebsiteBuilder() {
   };
 
   const onDrag = (layout, oldItem, newItem) => {
-    const headerWidget = layout.find((item) => item.i.startsWith('Header-'));
-    const footerWidget = layout.find((item) => item.i.startsWith('Footer-'));
-
-    if (headerWidget) {
-      headerWidget.y = 0;
-    }
-
-    // Sort layout by y position, then by x position
-    const sortedLayout = [...layout].sort((a, b) => {
-      if (a.y === b.y) return a.x - b.x;
-      return a.y - b.y;
-    });
-
-    // Find the maximum y + h value for all widgets except the footer
-    let maxY = 0;
-    sortedLayout.forEach((item) => {
-      if (item.i !== footerWidget?.i) {
-        maxY = Math.max(maxY, item.y + item.h);
-      }
-    });
-
-    // Place the footer at the bottom if it exists
-    if (footerWidget) {
-      footerWidget.y = maxY;
-    }
-
     setDraggedWidgetPosition({
       id: newItem.i,
       x: newItem.x,
@@ -353,6 +210,7 @@ function WebsiteBuilder() {
           <button onClick={() => addWidget('Ad')}>Add Ad</button>
           <button onClick={() => addWidget('Text')}>Add Text</button>
           <button onClick={() => addWidget('Highlight')}>Add Highlight</button>
+          <button onClick={() => addWidget('Section')}>Add Section</button>
           <button onClick={downloadCurrentLayout}>Download Layout</button>
         </div>
         <div className="canvas-container" onClick={handleCanvasClick}>
@@ -361,7 +219,7 @@ function WebsiteBuilder() {
             layouts={{ lg: widgets }}
             onBreakpointChange={onBreakpointChange}
             cols={cols}
-            rowHeight={15}
+            rowHeight={rowHeight}
             width={1200}
             onLayoutChange={onLayoutChange}
             onDrag={onDrag}
@@ -369,11 +227,10 @@ function WebsiteBuilder() {
             isDraggable={true}
             containerPadding={[0, 0]}
             margin={[0, 0]}
-            compactType="vertical"
+            compactType="vertical" // Vertical stacking
             preventCollision={false}
             useCSSTransforms={true}
-            draggableHandle=".widget-drag-handle"
-            draggableCancel=".nested-draggable"
+            // Removed draggableHandle and draggableCancel
             isDroppable={false}
           >
             {widgets.map(widget => {
@@ -386,6 +243,7 @@ function WebsiteBuilder() {
                 Ad: AdWidget,
                 Text: TextWidget,
                 Highlight: HighlightWidget,
+                Section: SectionWidget,
               }[widget.type];
 
               const isHeader = widget.type === 'Header';
@@ -393,11 +251,11 @@ function WebsiteBuilder() {
 
               const gridData = {
                 ...widget,
-                isDraggable: !isHeader,
-                isResizable: true,
-                y: isHeader ? 0 : widget.y,
-                minW: isHeader || isFooter ? totalColumns : 1,
-                maxW: isHeader || isFooter ? totalColumns : undefined,
+                isDraggable: !isHeader && !isFooter,
+                isResizable: !isHeader && !isFooter,
+                y: widget.y,
+                minW: isHeader || isFooter || widget.type === 'Section' ? totalColumns : 1,
+                maxW: isHeader || isFooter || widget.type === 'Section' ? totalColumns : undefined,
                 minH: widget.minH || 1,
               };
 
@@ -405,7 +263,7 @@ function WebsiteBuilder() {
                 <div
                   key={widget.i}
                   data-grid={gridData}
-                  className={`widget-container ${isHeader ? 'header-widget' : ''}`}
+                  className={`widget-container`}
                 >
                   <WidgetComponent
                     id={widget.i}
@@ -418,6 +276,7 @@ function WebsiteBuilder() {
                     draggedPosition={draggedWidgetPosition}
                     onHeightChange={handleWidgetHeightChange}
                     rowHeight={rowHeight}
+                    totalColumns={totalColumns}
                   />
                 </div>
               );

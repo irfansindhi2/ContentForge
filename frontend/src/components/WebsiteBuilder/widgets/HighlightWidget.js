@@ -90,7 +90,10 @@ function HighlightWidget({
   return (
     <div
       className="highlight-widget"
-      onContextMenu={onContextMenu}
+      onContextMenu={(e) => {
+        e.stopPropagation();
+        if (onContextMenu) onContextMenu(e);
+      }}
       ref={contentRef}
       style={{ boxSizing: 'border-box' }}
     >

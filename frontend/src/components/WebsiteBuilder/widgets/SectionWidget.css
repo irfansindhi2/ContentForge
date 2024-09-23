@@ -1,0 +1,46 @@
+.section-widget {
+    position: relative;
+    border: 2px dashed #ccc;
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+    background-image:
+      linear-gradient(to right, #e0e0e0 1px, transparent 1px),
+      linear-gradient(to bottom, #e0e0e0 1px, transparent 1px);
+    background-size: calc(100% / 12) 15px;
+    background-position: 0 0;
+  }
+  
+  .add-highlight-button {
+    position: absolute;
+    top: 5px;
+    left: 35px; /* Adjusted to not overlap with drag handle */
+    z-index: 10;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  
+  .add-highlight-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .widget-container {
+    border: 1px solid #ccc;
+    background-color: #fff;
+  }
+  
+  .section-drag-handle {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    cursor: grab;
+    z-index: 10;
+  }
+  
+  .section-drag-handle:hover {
+    cursor: grabbing;
+  }
+  
