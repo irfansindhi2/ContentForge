@@ -6,8 +6,8 @@ import List from './components/List/List';
 import Login from './pages/Login';
 import BuildLayout from './components/BuildLayout';
 import SearchPage from './components/List/SearchPage';
-import SiteBuilder from './site-builder/SiteBuilder'; // Import the SiteBuilder component
-
+import SiteBuilder from './site-builder/SiteBuilder';
+import Preview from './site-builder/Preview';
 function App() {
   return (
     <Router>
@@ -18,7 +18,8 @@ function App() {
         <Route path="/search/:listName" element={<SearchPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/buildlayout/:id" element={<BuildLayout />} />
-        <Route path="/sitebuilder" element={<SiteBuilder />} />
+        <Route path="/edit" element={<SiteBuilder />} />
+        <Route path="/preview" element={<Preview />} />
       </Routes>
     </Router>
   );

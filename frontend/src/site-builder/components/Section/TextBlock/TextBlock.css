@@ -1,9 +1,0 @@
-.text-block p {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    min-height: 50px;
-    margin: 0;
-    width: 100%;
-    resize: none;
-}
