@@ -6,6 +6,7 @@ import List from './components/List/List';
 import Login from './pages/Login';
 import BuildLayout from './components/BuildLayout';
 import SearchPage from './components/List/SearchPage';
+import SiteBuilder from './site-builder/SiteBuilder'; // Import the SiteBuilder component
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/search/:listName" element={<SearchPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/buildlayout/:id" element={<BuildLayout />} />
+        <Route path="/sitebuilder" element={<SiteBuilder />} />
       </Routes>
     </Router>
   );

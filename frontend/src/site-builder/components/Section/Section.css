@@ -1,0 +1,127 @@
+/* Container for the entire section */
+.section-container {
+    position: relative;
+    margin: 40px 0;
+    border: 1px dashed transparent;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    min-height: 300px;
+    transition: border 0.3s ease;
+}
+
+.section-container:hover {
+    border: 1px solid #007BFF;
+}
+
+/* Styles for the Add Section buttons */
+.add-section-button {
+    background-color: #fff;
+    color: #000;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.add-section-button.top {
+    top: -25px;
+}
+
+.add-section-button.bottom {
+    bottom: -25px;
+}
+
+.add-section-button:hover {
+    background-color: #f1f1f1;
+}
+
+/* Block Styling */
+.block {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+/* Container for the add block button */
+.add-block-container {
+    position: relative;
+    display: inline-block;
+}
+
+.add-block-button {
+    font-family: Figtree, sans-serif;
+    font-size: 16px;
+    padding: 10px;
+    color: rgb(34, 34, 34);
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    max-width: 250px; /* Adjust width for the block button */
+    transition: all 0.2s ease;
+}
+
+.add-block-button:hover {
+    box-shadow: var(--box-shadow-button-hover, 0 0 0 1px rgba(0, 0, 0, 0.025), 0 1px 4px rgba(0, 0, 0, 0.1));
+    background-color: var(--color-neutral-10, #f6f6f6); /* Light gray on hover */
+}
+
+/* Dropdown container */
+.add-block-container .dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: white;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    width: 250px;
+    padding: 10px;
+    z-index: 100;
+}
+
+/* Show dropdown */
+.add-block-container .dropdown-menu.show {
+    display: block;
+    animation: scaleIn 0.4s ease;
+}
+
+/* Hide dropdown */
+.add-block-container .dropdown-menu.hide {
+    display: none;
+    animation: scaleOut 0.4s ease;
+}
+
+/* Dropdown animation */
+@keyframes scaleIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes scaleOut {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+}
