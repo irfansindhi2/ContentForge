@@ -8,6 +8,8 @@ import BuildLayout from './components/BuildLayout';
 import SearchPage from './components/List/SearchPage';
 import SiteBuilder from './site-builder/SiteBuilder';
 import Preview from './site-builder/Preview';
+import { PreviewModeProvider } from './site-builder/PreviewModeContext';
+
 function App() {
   return (
     <Router>
@@ -18,8 +20,22 @@ function App() {
         <Route path="/search/:listName" element={<SearchPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/buildlayout/:id" element={<BuildLayout />} />
-        <Route path="/edit" element={<SiteBuilder />} />
-        <Route path="/preview" element={<Preview />} />
+        <Route
+          path="/edit"
+          element={
+            <PreviewModeProvider>
+              <SiteBuilder />
+            </PreviewModeProvider>
+          }
+        />
+        <Route
+          path="/preview"
+          element={
+            <PreviewModeProvider>
+              <Preview />
+            </PreviewModeProvider>
+          }
+        />
       </Routes>
     </Router>
   );

@@ -1,20 +1,39 @@
-import React from 'react';
-import { useLocation } from 'react-router-dom';
-import SectionContainer from './components/Section/SectionContainer';  // Adjust the import path as needed
+// Preview.js
+import React, { useContext, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import SectionContainer from './components/Section/SectionContainer';
+import { PreviewModeContext } from './PreviewModeContext';
 
 const Preview = () => {
   const location = useLocation();
-  const { sections } = location.state || { sections: [] }; // Get sections from the navigate state
+  const navigate = useNavigate();
+  const { setPreviewMode } = useContext(PreviewModeContext);
+
+  const { sections } = location.state || { sections: [] }; // Get sections from navigate state
+
+  // Enable preview mode when component mounts and disable it when unmounts
+  useEffect(() => {
+    setPreviewMode(true);
+
+    return () => {
+      setPreviewMode(false);
+    };
+  }, [setPreviewMode]);
+
+  // Redirect to builder if no sections are provided
+  if (!sections.length) {
+    navigate('/edit');
+    return null;
+  }
 
   return (
     <div className="p-4">
-      {/* Render all sections in preview mode */}
       {sections.map((section) => (
         <SectionContainer
           key={section.id}
           sectionId={section.id}
           blocks={section.blocks}
-          previewMode={true}  // Preview mode (no buttons)
+          updateBlocks={() => {}} // No updates in preview mode
         />
       ))}
     </div>

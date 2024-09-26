@@ -1,13 +1,20 @@
+// SiteBuilder.js
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 import SectionContainer from './components/Section/SectionContainer';
+import { PreviewModeContext } from './PreviewModeContext';
 
 const SiteBuilder = () => {
-  const [sections, setSections] = useState([{ id: 1, blocks: [{ id: '1-1', content: 'Block 1 of Section 1' }] }]);
+  const [sections, setSections] = useState([
+    { id: 1, blocks: [{ id: '1-1', type: 'text', content: 'Block 1 of Section 1' }] },
+  ]);
+
+  const { setPreviewMode } = useContext(PreviewModeContext);
   const navigate = useNavigate();
 
   // Open the preview
   const handlePreview = () => {
+    setPreviewMode(true); // Enable preview mode
     navigate('/preview', { state: { sections } });
   };
 
@@ -16,7 +23,16 @@ const SiteBuilder = () => {
     const newSectionId = sections.length + 1;
     setSections([
       ...sections,
-      { id: newSectionId, blocks: [{ id: `${newSectionId}-1`, content: `Block 1 of Section ${newSectionId}` }] },
+      {
+        id: newSectionId,
+        blocks: [
+          {
+            id: `${newSectionId}-1`,
+            type: 'text', // Default block type
+            content: `Block 1 of Section ${newSectionId}`,
+          },
+        ],
+      },
     ]);
   };
 
@@ -31,16 +47,10 @@ const SiteBuilder = () => {
 
   return (
     <div className="p-4">
-      <button
-        className="btn btn-primary"
-        onClick={handlePreview}
-      >
+      <button className="btn btn-primary" onClick={handlePreview}>
         Preview Mode
       </button>
-      <button
-        className="btn btn-secondary ml-4"
-        onClick={addSection}
-      >
+      <button className="btn btn-secondary ml-4" onClick={addSection}>
         Add Section
       </button>
 
@@ -50,8 +60,7 @@ const SiteBuilder = () => {
             key={section.id}
             sectionId={section.id}
             blocks={section.blocks}
-            updateBlocks={updateBlocksInSection}
-            previewMode={false}  // Edit mode
+            updateBlocks={(newBlocks) => updateBlocksInSection(section.id, newBlocks)}
           />
         ))}
       </div>
