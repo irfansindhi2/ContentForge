@@ -1,4 +1,3 @@
-// components/Section/SectionContainer.js
 import React, { useContext } from 'react';
 import SectionContent from './SectionContent';
 import { PreviewModeContext } from '../../PreviewModeContext';
