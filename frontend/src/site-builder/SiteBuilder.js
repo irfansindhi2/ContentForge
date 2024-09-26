@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { Box, Button } from '@mui/material';
-import SectionContainer from './components/Section/SectionContainer';
 import { useState } from 'react';
+import SectionContainer from './components/Section/SectionContainer';
 
 const SiteBuilder = () => {
   const [sections, setSections] = useState([{ id: 1, blocks: [{ id: '1-1', content: 'Block 1 of Section 1' }] }]);
@@ -31,15 +30,21 @@ const SiteBuilder = () => {
   };
 
   return (
-    <Box sx={{ margin: 3 }}>
-      <Button variant="contained" onClick={handlePreview}>
+    <div className="p-4">
+      <button
+        className="btn btn-primary"
+        onClick={handlePreview}
+      >
         Preview Mode
-      </Button>
-      <Button variant="contained" color="secondary" onClick={addSection} sx={{ marginLeft: 2 }}>
+      </button>
+      <button
+        className="btn btn-secondary ml-4"
+        onClick={addSection}
+      >
         Add Section
-      </Button>
+      </button>
 
-      <div id="preview-section">
+      <div id="preview-section" className="mt-4">
         {sections.map((section) => (
           <SectionContainer
             key={section.id}
@@ -50,7 +55,7 @@ const SiteBuilder = () => {
           />
         ))}
       </div>
-    </Box>
+    </div>
   );
 };
 

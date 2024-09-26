@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import SectionContainer from './components/Section/SectionContainer';  // Adjust the import path as needed
 
@@ -8,7 +7,7 @@ const Preview = () => {
   const { sections } = location.state || { sections: [] }; // Get sections from the navigate state
 
   return (
-    <Box>
+    <div className="p-4">
       {/* Render all sections in preview mode */}
       {sections.map((section) => (
         <SectionContainer
@@ -18,7 +17,7 @@ const Preview = () => {
           previewMode={true}  // Preview mode (no buttons)
         />
       ))}
-    </Box>
+    </div>
   );
 };
 

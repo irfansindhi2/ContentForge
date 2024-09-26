@@ -1,41 +1,32 @@
 import React from 'react';
-import { Box, Button } from '@mui/material';
-import SectionContent from './SectionContent';  // Separate content component
+import SectionContent from './SectionContent';
 
 const SectionContainer = ({ sectionId, blocks, updateBlocks, previewMode }) => {
   // Function to add a new block to the section
   const addBlock = () => {
     const newBlock = { id: `${sectionId}-${blocks.length + 1}`, content: `Block ${blocks.length + 1} of Section ${sectionId}` };
-    updateBlocks(sectionId, [...blocks, newBlock]);  // Append the new block
+    updateBlocks(sectionId, [...blocks, newBlock]);
   };
 
   return (
-    <Box
-      sx={{
-        padding: 3,
-        border: '1px solid transparent',
-        position: 'relative',
-        '&:hover': { borderColor: previewMode ? 'transparent' : 'blue' }, // Hover effect only in edit mode
-      }}
+    <div
+      className={`relative p-4 border ${
+        !previewMode ? 'hover:border-blue-500 border-transparent' : 'border-transparent'
+      }`}
     >
       {/* Only show the Add Block button in edit mode */}
       {!previewMode && (
-        <Button
-          variant="contained"
+        <button
+          className="btn btn-accent absolute top-2 left-2"
           onClick={addBlock}
-          sx={{
-            position: 'absolute',
-            top: 8,
-            left: 8,
-          }}
         >
           Add Block
-        </Button>
+        </button>
       )}
 
       {/* Render blocks */}
       <SectionContent blocks={blocks} />
-    </Box>
+    </div>
   );
 };
 

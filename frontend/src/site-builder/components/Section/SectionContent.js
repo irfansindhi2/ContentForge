@@ -1,16 +1,14 @@
 import React from 'react';
-import { Box, Paper, Typography } from '@mui/material';
 
-// This renders blocks based on their type
 const SectionContent = ({ blocks }) => {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div className="flex flex-col gap-4">
       {blocks.map((block) => (
-        <Paper key={block.id} elevation={3} sx={{ padding: 2 }}>
-          <Typography variant="body1">{block.content}</Typography>
-        </Paper>
+        <div key={block.id} className="p-4 bg-white shadow-md rounded-md">
+          <p className="text-base">{block.content}</p>
+        </div>
       ))}
-    </Box>
+    </div>
   );
 };
 
