@@ -22,7 +22,7 @@ const SiteBuilder = () => {
   const addSection = () => {
     const newSection = {
       id: `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      blocks: [createBlock()],
+      blocks: [],
     };
     setSections([...sections, newSection]);
   };
