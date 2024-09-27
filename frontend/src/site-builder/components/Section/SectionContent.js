@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { DndContext } from '@dnd-kit/core';
+import { restrictToParentElement } from '@dnd-kit/modifiers';
 import { PreviewModeContext } from '../../PreviewModeContext';
 import DraggableBlock from '../Block/DraggableBlock';
 import Block from '../Block/Block';
@@ -32,7 +33,7 @@ const SectionContent = ({ blocks, updateBlocks }) => {
         ))
       ) : (
         // In edit mode, enable drag-and-drop functionality
-        <DndContext onDragEnd={handleDragEnd}>
+        <DndContext onDragEnd={handleDragEnd} modifiers={[restrictToParentElement]}>
           {blocks.map((block) => (
             <DraggableBlock key={block.id} block={block} />
           ))}
