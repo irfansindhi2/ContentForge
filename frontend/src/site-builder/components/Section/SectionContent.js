@@ -48,10 +48,21 @@ const SectionContent = ({ blocks, updateBlocks }) => {
         >
           {/* Conditionally render grid overlay when dragging */}
           {isDragging && (
-            <div className="absolute inset-0 z-0 grid grid-cols-12 grid-rows-12 gap-2 pointer-events-none">
+            <div
+              className="absolute inset-0 z-0 grid pointer-events-none"
+              style={{
+                gridTemplateColumns: 'repeat(12, 1fr)', // Dynamic columns
+                gridTemplateRows: 'repeat(12, 1fr)',    // Dynamic rows
+                gap: '2px',  // You can adjust the gap between grid cells if necessary
+              }}
+            >
               {/* Create the grid background */}
               {[...Array(144)].map((_, idx) => (
-                <div key={idx} className="border border-gray-200"></div>
+                <div
+                  key={idx}
+                  className="border border-gray-200"
+                  style={{ aspectRatio: '1 / 1' }} // Ensure the grid cells are square
+                ></div>
               ))}
             </div>
           )}
