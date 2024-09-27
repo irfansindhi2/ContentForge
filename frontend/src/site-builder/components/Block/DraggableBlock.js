@@ -18,21 +18,20 @@ const DraggableBlock = ({ block, isPreview = false }) => {
     opacity: (previewMode || isPreview) ? 1 : transform ? 0.5 : 1,
   };
 
-  const content = <Block block={block} />;
+  const dragClasses = (previewMode || isPreview) ? '' : 'cursor-move';
 
   if (previewMode || isPreview) {
-    return content;
+    return <Block block={block} />;
   }
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="cursor-move"
       {...attributes}
       {...listeners}
     >
-      {content}
+      <Block block={block} className={dragClasses} />
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Block = ({ block }) => {
+const Block = ({ block, className = '' }) => {
   // Define the size classes here
   const sizeClasses = "w-full h-32"; // Adjust these classes as needed
 
@@ -15,7 +15,7 @@ const Block = ({ block }) => {
   };
 
   return (
-    <div className={`${sizeClasses} p-4 bg-white shadow-md rounded-md overflow-hidden`}>
+    <div className={`${sizeClasses} ${className} p-4 bg-white shadow-md rounded-md overflow-hidden`}>
       {renderContent()}
     </div>
   );
