@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { DndContext } from '@dnd-kit/core';
 import { restrictToParentElement } from '@dnd-kit/modifiers';
 import { snapToGrid } from '../../utils/modifiers';
@@ -8,8 +8,15 @@ import Block from '../Block/Block';
 
 const SectionContent = ({ blocks, updateBlocks }) => {
   const { previewMode } = useContext(PreviewModeContext);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragStart = () => {
+    setIsDragging(true); // Set dragging to true when drag starts
+  };
 
   const handleDragEnd = ({ active, delta }) => {
+    setIsDragging(false);
+
     const blockIndex = blocks.findIndex((block) => block.id === active.id);
     if (blockIndex === -1) return;
 
@@ -34,7 +41,22 @@ const SectionContent = ({ blocks, updateBlocks }) => {
         ))
       ) : (
         // In edit mode, enable drag-and-drop functionality
-        <DndContext onDragEnd={handleDragEnd} modifiers={[restrictToParentElement, snapToGrid(100)]}>
+        <DndContext
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          modifiers={[restrictToParentElement, snapToGrid(100)]}
+        >
+          {/* Conditionally render grid overlay when dragging */}
+          {isDragging && (
+            <div className="absolute inset-0 z-0 grid grid-cols-12 grid-rows-12 gap-2 pointer-events-none">
+              {/* Create the grid background */}
+              {[...Array(144)].map((_, idx) => (
+                <div key={idx} className="border border-gray-200"></div>
+              ))}
+            </div>
+          )}
+
+          {/* Render draggable blocks */}
           {blocks.map((block) => (
             <DraggableBlock key={block.id} block={block} />
           ))}
