@@ -6,6 +6,8 @@ import { PreviewModeContext } from '../../PreviewModeContext';
 import DraggableBlock from '../Block/DraggableBlock';
 import Block from '../Block/Block';
 
+const GRID_SIZE = 100;
+
 const SectionContent = ({ blocks, updateBlocks }) => {
   const { previewMode } = useContext(PreviewModeContext);
   const [isDragging, setIsDragging] = useState(false);
@@ -51,16 +53,16 @@ const SectionContent = ({ blocks, updateBlocks }) => {
         <DndContext
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
-          modifiers={[restrictToParentElement, snapToGrid(100)]}
+          modifiers={[restrictToParentElement, snapToGrid(GRID_SIZE)]}
         >
           {/* Conditionally render grid overlay when dragging */}
           {isDragging && (
             <div
-              className="absolute inset-0 z-0 grid pointer-events-none"
+              className="absolute inset-0 z-0 pointer-events-none"
               style={{
-                gridTemplateColumns: 'repeat(12, 1fr)', // Dynamic columns
-                gridTemplateRows: 'repeat(12, 1fr)',    // Dynamic rows
-                gap: '2px',  // You can adjust the gap between grid cells if necessary
+                backgroundSize: `${GRID_SIZE}px ${GRID_SIZE}px`,
+                backgroundImage:
+                  'linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px)',
               }}
             >
               {/* Create the grid background */}
