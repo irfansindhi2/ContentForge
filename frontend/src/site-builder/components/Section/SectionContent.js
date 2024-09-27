@@ -26,10 +26,8 @@ const SectionContent = ({ blocks, updateBlocks }) => {
     }
   };
 
-  const gridColumns = 3; // Adjust as needed
-
   return (
-    <div className={`grid grid-cols-${gridColumns} gap-4`}>
+    <div className="grid grid-cols-3 gap-4"> {/* Adjust grid columns as needed */}
       {previewMode ? (
         blocks.map((block) => (
           <DraggableBlock key={block.id} block={block} isPreview={true} />

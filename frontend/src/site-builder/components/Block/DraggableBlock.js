@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { PreviewModeContext } from '../../PreviewModeContext';
-import Block from './Block';
+import Block from '../Block/Block';
 
 const DraggableBlock = ({ block, isPreview = false }) => {
   const { previewMode } = useContext(PreviewModeContext);
@@ -18,11 +18,7 @@ const DraggableBlock = ({ block, isPreview = false }) => {
     opacity: (previewMode || isPreview) ? 1 : transform ? 0.5 : 1,
   };
 
-  const content = (
-    <div className="p-4 bg-white shadow-md rounded-md">
-      <Block block={block} />
-    </div>
-  );
+  const content = <Block block={block} />;
 
   if (previewMode || isPreview) {
     return content;
