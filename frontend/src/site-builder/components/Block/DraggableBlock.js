@@ -1,37 +1,25 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { PreviewModeContext } from '../../PreviewModeContext';
 import Block from '../Block/Block';
 
-const DraggableBlock = ({ block, isPreview = false }) => {
-  const { previewMode } = useContext(PreviewModeContext);
-
-  const { attributes, listeners, setNodeRef, transform, transition } = useDraggable({
+const DraggableBlock = ({ block }) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useDraggable({
     id: block.id,
-    disabled: previewMode || isPreview,
   });
 
+  // Apply absolute positioning with dynamic coordinates
   const style = {
-    transform: CSS.Transform.toString(transform),
+    position: 'absolute',
+    left: block.x + (transform ? transform.x : 0),
+    top: block.y + (transform ? transform.y : 0),
     transition,
-    opacity: (previewMode || isPreview) ? 1 : transform ? 0.5 : 1,
+    zIndex: isDragging ? 10 : 1,
   };
 
-  const dragClasses = (previewMode || isPreview) ? '' : 'cursor-move';
-
-  if (previewMode || isPreview) {
-    return <Block block={block} />;
-  }
-
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-    >
-      <Block block={block} className={dragClasses} />
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <Block block={block} />
     </div>
   );
 };

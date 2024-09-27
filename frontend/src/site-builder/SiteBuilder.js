@@ -17,7 +17,9 @@ const SiteBuilder = () => {
     id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     type,
     content,
-  });
+    x: 0,  // Default x coordinate
+    y: 0,  // Default y coordinate
+  });  
 
   const addSection = () => {
     const newSection = {

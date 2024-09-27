@@ -1,43 +1,40 @@
 import React, { useContext } from 'react';
-import { DndContext, useDroppable, closestCenter } from '@dnd-kit/core';
+import { DndContext } from '@dnd-kit/core';
 import { PreviewModeContext } from '../../PreviewModeContext';
 import DraggableBlock from '../Block/DraggableBlock';
-
-const DroppableContainer = ({ children, id }) => {
-  const { setNodeRef } = useDroppable({ id });
-  return <div ref={setNodeRef}>{children}</div>;
-};
+import Block from '../Block/Block';
 
 const SectionContent = ({ blocks, updateBlocks }) => {
   const { previewMode } = useContext(PreviewModeContext);
 
-  const handleDragEnd = ({ active, over }) => {
-    if (active.id !== over?.id) {
-      const oldIndex = blocks.findIndex((block) => block.id === active.id);
-      const newIndex = blocks.findIndex((block) => block.id === over?.id);
+  const handleDragEnd = ({ active, delta }) => {
+    const blockIndex = blocks.findIndex((block) => block.id === active.id);
+    if (blockIndex === -1) return;
 
-      if (newIndex === -1) return;
+    const updatedBlocks = [...blocks];
+    const blockToUpdate = updatedBlocks[blockIndex];
 
-      const newBlocks = [...blocks];
-      const [movedBlock] = newBlocks.splice(oldIndex, 1);
-      newBlocks.splice(newIndex, 0, movedBlock);
+    // Update block's x and y coordinates after dragging
+    blockToUpdate.x = (blockToUpdate.x || 0) + delta.x;
+    blockToUpdate.y = (blockToUpdate.y || 0) + delta.y;
 
-      updateBlocks(newBlocks);
-    }
+    updateBlocks(updatedBlocks);
   };
 
   return (
-    <div className="grid grid-cols-3 gap-4"> {/* Adjust grid columns as needed */}
+    <div className="relative w-full h-screen">
       {previewMode ? (
+        // In preview mode, simply render the blocks without drag-and-drop functionality
         blocks.map((block) => (
-          <DraggableBlock key={block.id} block={block} isPreview={true} />
+          <div key={block.id} style={{ position: 'absolute', left: block.x, top: block.y }}>
+            <Block block={block} />
+          </div>
         ))
       ) : (
-        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        // In edit mode, enable drag-and-drop functionality
+        <DndContext onDragEnd={handleDragEnd}>
           {blocks.map((block) => (
-            <DroppableContainer key={block.id} id={block.id}>
-              <DraggableBlock block={block} />
-            </DroppableContainer>
+            <DraggableBlock key={block.id} block={block} />
           ))}
         </DndContext>
       )}
