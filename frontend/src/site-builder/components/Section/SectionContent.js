@@ -9,9 +9,12 @@ import Block from '../Block/Block';
 const SectionContent = ({ blocks, updateBlocks }) => {
   const { previewMode } = useContext(PreviewModeContext);
   const [isDragging, setIsDragging] = useState(false);
+  const [scrollYStart, setScrollYStart] = useState(0);
 
   const handleDragStart = () => {
-    setIsDragging(true); // Set dragging to true when drag starts
+    setIsDragging(true);
+    // Capture the current scroll position when dragging starts
+    setScrollYStart(window.scrollY);
   };
 
   const handleDragEnd = ({ active, delta }) => {
@@ -23,9 +26,13 @@ const SectionContent = ({ blocks, updateBlocks }) => {
     const updatedBlocks = [...blocks];
     const blockToUpdate = updatedBlocks[blockIndex];
 
-    // Update block's x and y coordinates after dragging
+    // Adjust delta.y by subtracting the scroll difference
+    const scrollYEnd = window.scrollY;
+    const scrollDeltaY = scrollYEnd - scrollYStart;
+
+    // Update block's x and y coordinates after dragging, adjusting for scroll
     blockToUpdate.x = (blockToUpdate.x || 0) + delta.x;
-    blockToUpdate.y = (blockToUpdate.y || 0) + delta.y;
+    blockToUpdate.y = (blockToUpdate.y || 0) + delta.y - scrollDeltaY;
 
     updateBlocks(updatedBlocks);
   };
