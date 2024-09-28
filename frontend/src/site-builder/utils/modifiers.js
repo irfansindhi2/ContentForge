@@ -1,13 +1,9 @@
-import { Modifier } from '@dnd-kit/core';
+export const snapToGrid = (gridSize) => ({ transform }) => {
+  if (!transform) return transform;
 
-export const snapToGrid = (gridSize) => {
-  const modifier= ({ transform }) => {
-    return {
-      x: Math.round(transform.x / gridSize) * gridSize,
-      y: Math.round(transform.y / gridSize) * gridSize,
-    };
+  return {
+    ...transform,
+    x: Math.round(transform.x / gridSize) * gridSize,
+    y: Math.round(transform.y / gridSize) * gridSize,
   };
-  return modifier;
 };
-
-// You can add more modifiers here as needed.

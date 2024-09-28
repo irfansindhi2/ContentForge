@@ -1,6 +1,5 @@
 import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
 import Block from '../Block/Block';
 
 const DraggableBlock = ({ block }) => {
@@ -11,8 +10,8 @@ const DraggableBlock = ({ block }) => {
   // Apply absolute positioning with dynamic coordinates
   const style = {
     position: 'absolute',
-    left: block.x + (transform ? transform.x : 0),
-    top: block.y + (transform ? transform.y : 0),
+    left: `calc(${block.x}% + ${transform ? transform.x : 0}px)`,
+    top: `calc(${block.y}% + ${transform ? transform.y : 0}px)`,
     transition,
     zIndex: isDragging ? 10 : 1,
   };
