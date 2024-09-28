@@ -1,5 +1,11 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
-import { DndContext } from '@dnd-kit/core';
+import {
+  DndContext,
+  useSensor,
+  useSensors,
+  TouchSensor,
+  MouseSensor,
+} from '@dnd-kit/core';
 import { restrictToParentElement } from '@dnd-kit/modifiers';
 import { snapToGrid } from '../../utils/modifiers';
 import { PreviewModeContext } from '../../PreviewModeContext';
@@ -26,6 +32,12 @@ const SectionContent = ({ blocks, updateBlocks }) => {
     window.addEventListener('resize', updateGridSize);
     return () => window.removeEventListener('resize', updateGridSize);
   }, []);
+
+  // Define sensors for touch and mouse support
+  const sensors = useSensors(
+    useSensor(MouseSensor),
+    useSensor(TouchSensor)
+  );
 
   const handleDragStart = () => {
     setIsDragging(true);
@@ -92,6 +104,7 @@ const SectionContent = ({ blocks, updateBlocks }) => {
       ) : (
         // In edit mode, enable drag-and-drop functionality
         <DndContext
+          sensors={sensors} // Pass the sensors here
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
           modifiers={[restrictToParentElement, snapToGrid(gridSize)]}
