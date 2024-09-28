@@ -1,17 +1,39 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useDraggable } from '@dnd-kit/core';
-import Block from '../Block/Block';
+import Block from './Block';
 
-const DraggableBlock = ({ block }) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useDraggable({
+const DraggableBlock = ({ block, containerRef, setBlockDimensions }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setDraggableNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useDraggable({
     id: block.id,
   });
+
+  const blockRef = useRef(null);
+
+  // Merge the refs
+  const setNodeRef = (node) => {
+    setDraggableNodeRef(node);
+    blockRef.current = node;
+  };
+
+  useEffect(() => {
+    if (blockRef.current) {
+      const rect = blockRef.current.getBoundingClientRect();
+      setBlockDimensions(block.id, { width: rect.width, height: rect.height });
+    }
+  }, [block.id, setBlockDimensions]);
 
   // Apply absolute positioning with dynamic coordinates
   const style = {
     position: 'absolute',
     left: `calc(${block.x}% + ${transform ? transform.x : 0}px)`,
-    top: `calc(${block.y}% + ${transform ? transform.y : 0}px)`,
+    top: `${(block.y || 0) + (transform ? transform.y : 0)}px`,
     transition,
     zIndex: isDragging ? 10 : 1,
   };

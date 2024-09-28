@@ -18,7 +18,7 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks }) => {
 
   return (
     <div
-      className={`relative overflow-hidden w-full h-full p-4 border ${
+      className={`relative overflow-hidden w-full p-4 border ${
         !previewMode ? 'hover:border-blue-500 border-transparent' : 'border-transparent'
       }`}
     >

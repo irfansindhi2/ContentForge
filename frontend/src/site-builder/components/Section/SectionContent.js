@@ -1,4 +1,5 @@
-import React, { useContext, useState, useRef, useEffect } from 'react';
+// SectionContent.jsx
+import React, { useContext, useState, useRef, useEffect, useMemo } from 'react';
 import {
   DndContext,
   useSensor,
@@ -10,6 +11,7 @@ import { restrictToParentElement } from '@dnd-kit/modifiers';
 import { snapToGrid } from '../../utils/modifiers';
 import { PreviewModeContext } from '../../PreviewModeContext';
 import DraggableBlock from '../Block/DraggableBlock';
+import BlockWrapper from '../Block/BlockWrapper'; // New component
 import Block from '../Block/Block';
 
 const SectionContent = ({ blocks, updateBlocks }) => {
@@ -17,15 +19,16 @@ const SectionContent = ({ blocks, updateBlocks }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [scrollYStart, setScrollYStart] = useState(0);
   const containerRef = useRef(null);
-  const [gridSize, setGridSize] = useState(100);
+  const [blockDimensions, setBlockDimensions] = useState({});
+  const [gridSize, setGridSize] = useState(50); // Default grid size
+  const [draggingBlock, setDraggingBlock] = useState(null);
 
   // Update grid size based on container width
   useEffect(() => {
-    const container = containerRef.current;
     const updateGridSize = () => {
-      if (container) {
-        const containerWidth = container.getBoundingClientRect().width;
-        setGridSize(containerWidth / 10); // Divide container into 10 columns
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.getBoundingClientRect().width;
+        setGridSize(containerWidth / 24); // Divide container into 24 columns
       }
     };
     updateGridSize();
@@ -34,19 +37,46 @@ const SectionContent = ({ blocks, updateBlocks }) => {
   }, []);
 
   // Define sensors for touch and mouse support
-  const sensors = useSensors(
-    useSensor(MouseSensor),
-    useSensor(TouchSensor)
-  );
+  const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
 
-  const handleDragStart = () => {
+  const handleDragStart = ({ active }) => {
     setIsDragging(true);
-    // Capture the current scroll position when dragging starts
     setScrollYStart(window.scrollY);
+    setDraggingBlock({ id: active.id, x: null, y: null });
+  };
+
+  const handleDragMove = ({ active, delta }) => {
+    const blockIndex = blocks.findIndex((block) => block.id === active.id);
+    if (blockIndex === -1) return;
+
+    const block = blocks[blockIndex];
+
+    // Get container dimensions
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const containerWidth = containerRect.width;
+
+    // Adjust delta.y by subtracting the scroll difference
+    const scrollYEnd = window.scrollY;
+    const scrollDeltaY = scrollYEnd - scrollYStart;
+
+    const deltaX = delta.x;
+    const deltaY = delta.y - scrollDeltaY;
+
+    // Compute new x percentage
+    const newPercentageX = block.x + (deltaX / containerWidth) * 100;
+
+    // Clamp X values between 0% and 100%
+    const clampedX = Math.max(0, Math.min(newPercentageX, 100));
+
+    // Compute potential new y position
+    const newY = (block.y || 0) + deltaY;
+
+    setDraggingBlock({ id: active.id, x: clampedX, y: newY });
   };
 
   const handleDragEnd = ({ active, delta }) => {
     setIsDragging(false);
+    setDraggingBlock(null);
 
     const blockIndex = blocks.findIndex((block) => block.id === active.id);
     if (blockIndex === -1) return;
@@ -57,11 +87,6 @@ const SectionContent = ({ blocks, updateBlocks }) => {
     // Get container dimensions
     const containerRect = containerRef.current.getBoundingClientRect();
     const containerWidth = containerRect.width;
-    const containerHeight = containerRect.height;
-
-    // Compute initial absolute positions
-    const initialX = (blockToUpdate.x / 100) * containerWidth;
-    const initialY = (blockToUpdate.y / 100) * containerHeight;
 
     // Adjust delta.y by subtracting the scroll difference
     const scrollYEnd = window.scrollY;
@@ -70,42 +95,70 @@ const SectionContent = ({ blocks, updateBlocks }) => {
     const deltaX = delta.x;
     const deltaY = delta.y - scrollDeltaY;
 
-    // Compute new absolute positions
-    const newX = initialX + deltaX;
-    const newY = initialY + deltaY;
+    // Compute new x percentage
+    const newPercentageX = blockToUpdate.x + (deltaX / containerWidth) * 100;
 
-    // Compute new percentages
-    const newPercentageX = (newX / containerWidth) * 100;
-    const newPercentageY = (newY / containerHeight) * 100;
-
-    // Clamp values between 0 and 100
+    // Clamp X values between 0% and 100%
     blockToUpdate.x = Math.max(0, Math.min(newPercentageX, 100));
-    blockToUpdate.y = Math.max(0, Math.min(newPercentageY, 100));
+
+    // Update y position in pixels
+    blockToUpdate.y = (blockToUpdate.y || 0) + deltaY;
 
     updateBlocks(updatedBlocks);
   };
 
+  // Function to update block dimensions
+  const handleSetBlockDimensions = (blockId, dimensions) => {
+    setBlockDimensions((prevDimensions) => ({
+      ...prevDimensions,
+      [blockId]: dimensions,
+    }));
+  };
+
+  // Compute container height based on blocks' positions and dimensions
+  const containerHeight = useMemo(() => {
+    let maxY = 0;
+
+    blocks.forEach((block) => {
+      const dimensions = blockDimensions[block.id];
+      if (dimensions) {
+        const blockHeight = dimensions.height;
+        let y = block.y || 0; // y position in pixels
+
+        // If this is the currently dragging block, use its potential position
+        if (draggingBlock && block.id === draggingBlock.id && draggingBlock.y !== null) {
+          y = draggingBlock.y;
+        }
+
+        maxY = Math.max(maxY, y + blockHeight);
+      }
+    });
+
+    // Add some padding if needed
+    return maxY + gridSize;
+  }, [blocks, blockDimensions, gridSize, draggingBlock]);
+
   return (
-    <div ref={containerRef} className="relative w-full h-screen">
+    <div
+      ref={containerRef}
+      className="relative w-full"
+      style={{ height: `${containerHeight}px`, overflow: 'visible' }}
+    >
       {previewMode ? (
-        // In preview mode, simply render the blocks without drag-and-drop functionality
+        // In preview mode, render blocks with BlockWrapper to get dimensions
         blocks.map((block) => (
-          <div
+          <BlockWrapper
             key={block.id}
-            style={{
-              position: 'absolute',
-              left: `${block.x}%`,
-              top: `${block.y}%`,
-            }}
-          >
-            <Block block={block} />
-          </div>
+            block={block}
+            setBlockDimensions={handleSetBlockDimensions}
+          />
         ))
       ) : (
         // In edit mode, enable drag-and-drop functionality
         <DndContext
-          sensors={sensors} // Pass the sensors here
+          sensors={sensors}
           onDragStart={handleDragStart}
+          onDragMove={handleDragMove}
           onDragEnd={handleDragEnd}
           modifiers={[restrictToParentElement, snapToGrid(gridSize)]}
         >
@@ -123,7 +176,12 @@ const SectionContent = ({ blocks, updateBlocks }) => {
 
           {/* Render draggable blocks */}
           {blocks.map((block) => (
-            <DraggableBlock key={block.id} block={block} />
+            <DraggableBlock
+              key={block.id}
+              block={block}
+              containerRef={containerRef}
+              setBlockDimensions={handleSetBlockDimensions}
+            />
           ))}
         </DndContext>
       )}
