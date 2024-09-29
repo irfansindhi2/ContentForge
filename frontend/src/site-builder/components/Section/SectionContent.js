@@ -12,10 +12,7 @@ import { PreviewModeContext } from '../../PreviewModeContext';
 import DraggableBlock from '../Block/DraggableBlock';
 import BlockWrapper from '../Block/BlockWrapper';
 import Block from '../Block/Block';
-
-// Import the custom modifier
-import { restrictHorizontalToParent } from '../../utils/modifiers';
-import { snapToGrid } from '../../utils/modifiers'; // Import the snapToGrid modifier
+import { restrictMovement, snapToGrid } from '../../utils/modifiers';
 
 const SectionContent = ({ blocks, updateBlocks }) => {
   const { previewMode } = useContext(PreviewModeContext);
@@ -116,7 +113,7 @@ const SectionContent = ({ blocks, updateBlocks }) => {
           collisionDetection={closestCenter}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
-          modifiers={[restrictHorizontalToParent(containerRef), snapToGrid(gridSize)]}
+          modifiers={[restrictMovement(containerRef), snapToGrid(gridSize)]}
         >
           {/* Conditionally render grid overlay when dragging */}
           {isDragging && (

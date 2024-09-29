@@ -8,7 +8,7 @@ export const snapToGrid = (gridSize) => ({ transform }) => {
   };
 };
 
-export const restrictHorizontalToParent = (containerRef) => ({ transform, activeNodeRect }) => {
+export const restrictMovement = (containerRef) => ({ transform, activeNodeRect, draggingNodeRect }) => {
   if (!activeNodeRect || !containerRef.current) {
     return transform;
   }
@@ -25,9 +25,22 @@ export const restrictHorizontalToParent = (containerRef) => ({ transform, active
     x = maxX - (activeNodeRect.left - containerRect.left);
   }
 
-  // Do not restrict Y movement
+  // Prevent moving up, but allow moving down
+  let y = transform.y;
+  if (draggingNodeRect && draggingNodeRect.top !== null) {
+    if (draggingNodeRect.top + transform.y < containerRect.top) {
+      y = containerRect.top - draggingNodeRect.top;
+    }
+  } else {
+    // If draggingNodeRect is not available, use activeNodeRect as a fallback
+    if (activeNodeRect.top + transform.y < containerRect.top) {
+      y = containerRect.top - activeNodeRect.top;
+    }
+  }
+
   return {
     ...transform,
     x,
+    y,
   };
 };
