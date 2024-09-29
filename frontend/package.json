@@ -18,6 +18,7 @@
     "axios": "^1.7.5",
     "cors": "^2.8.5",
     "daisyui": "^4.12.10",
+    "gridstack": "^10.3.1",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.26.1",
