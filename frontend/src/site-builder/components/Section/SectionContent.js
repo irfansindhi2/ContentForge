@@ -1,5 +1,4 @@
-// SectionContent.jsx
-import React, { useContext, useState, useRef, useEffect, useMemo } from 'react';
+import React, { useContext, useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import {
   DndContext,
   useSensor,
@@ -11,7 +10,7 @@ import { restrictToParentElement } from '@dnd-kit/modifiers';
 import { snapToGrid } from '../../utils/modifiers';
 import { PreviewModeContext } from '../../PreviewModeContext';
 import DraggableBlock from '../Block/DraggableBlock';
-import BlockWrapper from '../Block/BlockWrapper'; // New component
+import BlockWrapper from '../Block/BlockWrapper';
 import Block from '../Block/Block';
 
 const SectionContent = ({ blocks, updateBlocks }) => {
@@ -34,6 +33,14 @@ const SectionContent = ({ blocks, updateBlocks }) => {
     updateGridSize();
     window.addEventListener('resize', updateGridSize);
     return () => window.removeEventListener('resize', updateGridSize);
+  }, []);
+
+  // Memoize the handleSetBlockDimensions function
+  const handleSetBlockDimensions = useCallback((blockId, dimensions) => {
+    setBlockDimensions((prevDimensions) => ({
+      ...prevDimensions,
+      [blockId]: dimensions,
+    }));
   }, []);
 
   // Define sensors for touch and mouse support
@@ -105,14 +112,6 @@ const SectionContent = ({ blocks, updateBlocks }) => {
     blockToUpdate.y = (blockToUpdate.y || 0) + deltaY;
 
     updateBlocks(updatedBlocks);
-  };
-
-  // Function to update block dimensions
-  const handleSetBlockDimensions = (blockId, dimensions) => {
-    setBlockDimensions((prevDimensions) => ({
-      ...prevDimensions,
-      [blockId]: dimensions,
-    }));
   };
 
   // Compute container height based on blocks' positions and dimensions
