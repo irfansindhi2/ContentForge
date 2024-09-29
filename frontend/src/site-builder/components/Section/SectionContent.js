@@ -12,14 +12,13 @@ import { PreviewModeContext } from '../../PreviewModeContext';
 import DraggableBlock from '../Block/DraggableBlock';
 import BlockWrapper from '../Block/BlockWrapper';
 import Block from '../Block/Block';
-import { restrictMovement, snapToGrid } from '../../utils/modifiers';
+import { restrictMovement } from '../../utils/modifiers';
 
 const SectionContent = ({ blocks, updateBlocks }) => {
   const { previewMode } = useContext(PreviewModeContext);
   const [activeId, setActiveId] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef(null);
-  const gridSize = 50; // Define grid size (adjust as needed)
 
   // State to hold dimensions of blocks
   const [blockDimensions, setBlockDimensions] = useState({});
@@ -47,8 +46,8 @@ const SectionContent = ({ blocks, updateBlocks }) => {
     });
 
     // Add some padding if needed
-    return maxY + gridSize;
-  }, [blocks, blockDimensions, gridSize]);
+    return maxY + 50; // You may adjust this padding as necessary
+  }, [blocks, blockDimensions]);
 
   // Define sensors for touch and mouse support
   const sensors = useSensors(
@@ -64,37 +63,32 @@ const SectionContent = ({ blocks, updateBlocks }) => {
   const handleDragEnd = ({ active, delta }) => {
     setActiveId(null);
     setIsDragging(false);
-
+  
     const blockIndex = blocks.findIndex((block) => block.id === active.id);
     if (blockIndex === -1) return;
-
+  
     const updatedBlocks = [...blocks];
     const blockToUpdate = updatedBlocks[blockIndex];
-
+  
     const containerRect = containerRef.current.getBoundingClientRect();
     const containerWidth = containerRect.width;
-
-    // Apply snapping to delta values
-    const snappedDeltaX = Math.round(delta.x / gridSize) * gridSize;
-    const snappedDeltaY = Math.round(delta.y / gridSize) * gridSize;
-
-    // Compute new x percentage
-    const newPercentageX =
-      blockToUpdate.x + (snappedDeltaX / containerWidth) * 100;
-
-    // Clamp X values between 0% and 100%
+  
+    // Compute new x percentage based on 24-column grid without hardcoding grid size
+    const newPercentageX = ((blockToUpdate.x * containerWidth) / 100 + delta.x) / containerWidth * 100;
+  
+    // Clamp X values between 0% and 100% of the container
     blockToUpdate.x = Math.max(0, Math.min(newPercentageX, 100));
-
+  
     // Update y position in pixels
-    blockToUpdate.y = (blockToUpdate.y || 0) + snappedDeltaY;
-
+    blockToUpdate.y = (blockToUpdate.y || 0) + delta.y;
+  
     updateBlocks(updatedBlocks);
   };
 
   return (
     <div
       ref={containerRef}
-      className="relative w-full"
+      className="grid grid-cols-24 md:grid-cols-12 sm:grid-cols-6"
       style={{ height: `${containerHeight}px`, overflow: 'visible' }}
     >
       {previewMode ? (
@@ -113,14 +107,14 @@ const SectionContent = ({ blocks, updateBlocks }) => {
           collisionDetection={closestCenter}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
-          modifiers={[restrictMovement(containerRef), snapToGrid(gridSize)]}
+          modifiers={[restrictMovement(containerRef)]}
         >
           {/* Conditionally render grid overlay when dragging */}
           {isDragging && (
             <div
               className="absolute inset-0 z-0 pointer-events-none"
               style={{
-                backgroundSize: `${gridSize}px ${gridSize}px`,
+                backgroundSize: '4.16667% 50px', // 4.16667% width represents one column in a 24-column grid
                 backgroundImage:
                   'linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px)',
               }}
@@ -136,8 +130,8 @@ const SectionContent = ({ blocks, updateBlocks }) => {
             />
           ))}
 
-          {/* Render DragOverlay with snapping */}
-          <DragOverlay modifiers={[snapToGrid(gridSize)]}>
+          {/* Render DragOverlay */}
+          <DragOverlay>
             {activeId ? (
               <Block block={blocks.find((block) => block.id === activeId)} />
             ) : null}
