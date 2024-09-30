@@ -1,9 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import Block from './Block';
+import { gridToPixels } from '../../utils/gridUtils';
 
-const DraggableBlock = ({ block, setBlockDimensions }) => {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+const DraggableBlock = ({ block, setBlockDimensions, columns, rowHeight, containerRect }) => {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: block.id,
   });
 
@@ -22,13 +23,16 @@ const DraggableBlock = ({ block, setBlockDimensions }) => {
     }
   }, [block.id, setBlockDimensions]);
 
-  // Apply absolute positioning based on block's x and y
-  const style = {
-    position: 'absolute',
-    left: `${block.x * 4.16667}%`, // 4.16667% is the width of one column in a 24-column grid
-    top: `${block.y * 50}px`,
-    zIndex: isDragging ? 10 : 1,
-  };
+  // Apply positioning based on block's x and y
+  const style = containerRect
+    ? {
+        position: 'absolute',
+        ...gridToPixels(block.x, block.y, containerRect, columns, rowHeight),
+        zIndex: isDragging ? 10 : 1,
+        transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+        transition: isDragging ? 'none' : 'transform 200ms ease',
+      }
+    : {};
 
   return (
     <div ref={combinedRef} style={style} {...attributes} {...listeners}>

@@ -12,16 +12,22 @@ import { PreviewModeContext } from '../../PreviewModeContext';
 import DraggableBlock from '../Block/DraggableBlock';
 import BlockWrapper from '../Block/BlockWrapper';
 import Block from '../Block/Block';
-import { restrictToGrid } from '../../utils/modifiers';
+import { snapToGrid, restrictToContainer, pixelsToGrid } from '../../utils/gridUtils';
 
-const SectionContent = ({ blocks, updateBlocks }) => {
+const SectionContent = ({ blocks, updateBlocks, columns = 24, rowHeight = 50 }) => {
   const { previewMode } = useContext(PreviewModeContext);
   const [activeId, setActiveId] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef(null);
+  const [containerRect, setContainerRect] = useState(null);
 
   // State to hold dimensions of blocks
   const [blockDimensions, setBlockDimensions] = useState({});
+
+  useEffect(() => {
+    if (containerRef.current) {
+      setContainerRect(containerRef.current.getBoundingClientRect());
+    }
+  }, []);
 
   // Memoize the handleSetBlockDimensions function to prevent infinite loops
   const handleSetBlockDimensions = useCallback((blockId, dimensions) => {
@@ -38,16 +44,14 @@ const SectionContent = ({ blocks, updateBlocks }) => {
     blocks.forEach((block) => {
       const dimensions = blockDimensions[block.id];
       if (dimensions) {
-        const blockHeight = dimensions.height;
-        let y = block.y || 0; // y position in grid units
-
-        maxY = Math.max(maxY, (y + 1) * 50); // Assuming each grid cell is 50px high
+        const blockHeight = Math.ceil(dimensions.height / rowHeight); // Convert to grid units and round up
+        maxY = Math.max(maxY, block.y + blockHeight);
       }
     });
 
     // Add some padding if needed
-    return maxY + 50; // You may adjust this padding as necessary
-  }, [blocks, blockDimensions]);
+    return `${maxY * rowHeight}px`;
+  }, [blocks, blockDimensions, rowHeight]);
 
   // Define sensors for touch and mouse support
   const sensors = useSensors(
@@ -57,32 +61,30 @@ const SectionContent = ({ blocks, updateBlocks }) => {
 
   const handleDragStart = ({ active }) => {
     setActiveId(active.id);
-    setIsDragging(true);
   };
 
-  const handleDragEnd = ({ active, delta }) => {
+  const handleDragEnd = ({ active, over, delta }) => {
     setActiveId(null);
-    setIsDragging(false);
   
+    if (!containerRect) return;
+
     const blockIndex = blocks.findIndex((block) => block.id === active.id);
     if (blockIndex === -1) return;
   
     const updatedBlocks = [...blocks];
     const blockToUpdate = updatedBlocks[blockIndex];
   
-    const containerRect = containerRef.current.getBoundingClientRect();
-    const cellWidth = containerRect.width / 24; // 24 columns
-    const cellHeight = 50; // Assuming each grid cell is 50px high
+    const { x: newGridX, y: newGridY } = pixelsToGrid(
+      blockToUpdate.x * containerRect.width / columns + delta.x,
+      blockToUpdate.y * rowHeight + delta.y,
+      containerRect,
+      columns,
+      rowHeight
+    );
   
-    // Compute new x and y in grid units
-    const newX = Math.round((blockToUpdate.x + delta.x / cellWidth));
-    const newY = Math.round((blockToUpdate.y + delta.y / cellHeight));
-  
-    // Clamp X values between 0 and 23 (24 columns)
-    blockToUpdate.x = Math.max(0, Math.min(newX, 23));
-    
-    // Clamp Y values to be non-negative
-    blockToUpdate.y = Math.max(0, newY);
+    // Update block position
+    blockToUpdate.x = newGridX;
+    blockToUpdate.y = newGridY;
   
     updateBlocks(updatedBlocks);
   };
@@ -90,8 +92,15 @@ const SectionContent = ({ blocks, updateBlocks }) => {
   return (
     <div
       ref={containerRef}
-      className="grid grid-cols-24 gap-0"
-      style={{ height: `${containerHeight}px`, overflow: 'visible' }}
+      className="relative"
+      style={{
+        minHeight: containerHeight,
+        overflow: 'visible',
+        display: 'grid',
+        gridTemplateColumns: `repeat(${columns}, 1fr)`,
+        '--grid-columns': columns,
+        '--row-height': `${rowHeight}px`,
+      }}
     >
       {previewMode ? (
         // In preview mode, render blocks without drag-and-drop
@@ -100,6 +109,9 @@ const SectionContent = ({ blocks, updateBlocks }) => {
             key={block.id}
             block={block}
             setBlockDimensions={handleSetBlockDimensions}
+            columns={columns}
+            rowHeight={rowHeight}
+            containerRect={containerRect}
           />
         ))
       ) : (
@@ -109,13 +121,16 @@ const SectionContent = ({ blocks, updateBlocks }) => {
           collisionDetection={closestCenter}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
-          modifiers={[restrictToGrid]}
+          modifiers={containerRect ? [
+            snapToGrid(containerRect, columns, rowHeight),
+            restrictToContainer(containerRect)
+          ] : []}
         >
           {/* Render grid overlay */}
           <div
             className="absolute inset-0 z-0 pointer-events-none"
             style={{
-              backgroundSize: '4.16667% 50px', // 4.16667% width represents one column in a 24-column grid
+              backgroundSize: `calc(100% / var(--grid-columns)) var(--row-height)`,
               backgroundImage:
                 'linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px)',
             }}
@@ -127,6 +142,9 @@ const SectionContent = ({ blocks, updateBlocks }) => {
               key={block.id}
               block={block}
               setBlockDimensions={handleSetBlockDimensions}
+              columns={columns}
+              rowHeight={rowHeight}
+              containerRect={containerRect}
             />
           ))}
 
