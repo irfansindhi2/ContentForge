@@ -48,7 +48,7 @@ const SiteBuilder = () => {
   };
 
   return (
-    <div className="p-4">
+    <div>
       <button className="btn btn-primary" onClick={handlePreview}>
         Preview Mode
       </button>
