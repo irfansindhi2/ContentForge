@@ -1,10 +1,10 @@
 import React from 'react';
 
-const Block = ({ block, className = '' }) => {
-  const colSpan = Math.min(block.colSpan || 2, 24); // Assuming a max of 24 columns
+const Block = ({ block }) => {
   return (
-    <div className={`col-span-${colSpan} bg-white shadow-lg rounded-md p-4 ${className}`}>
+    <div className="h-full w-full bg-white shadow-lg rounded-md p-4 overflow-hidden box-border">
       {block.type === 'text' && <p className="text-sm">{block.content}</p>}
+      {/* Add more block types here as needed */}
     </div>
   );
 };
