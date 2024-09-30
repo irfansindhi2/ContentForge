@@ -49,7 +49,6 @@ const SectionContent = ({ blocks, updateBlocks, columns = 24, rowHeight = 50 }) 
       }
     });
 
-    // Add some padding if needed
     return `${Math.max(maxY * rowHeight, 300)}px`; // Ensure a minimum height
   }, [blocks, blockDimensions, rowHeight]);
 
