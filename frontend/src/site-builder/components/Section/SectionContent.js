@@ -12,7 +12,7 @@ import { PreviewModeContext } from '../../PreviewModeContext';
 import DraggableBlock from '../Block/DraggableBlock';
 import BlockWrapper from '../Block/BlockWrapper';
 import Block from '../Block/Block';
-import { restrictMovement } from '../../utils/modifiers';
+import { restrictToGrid } from '../../utils/modifiers';
 
 const SectionContent = ({ blocks, updateBlocks }) => {
   const { previewMode } = useContext(PreviewModeContext);
@@ -39,9 +39,9 @@ const SectionContent = ({ blocks, updateBlocks }) => {
       const dimensions = blockDimensions[block.id];
       if (dimensions) {
         const blockHeight = dimensions.height;
-        let y = block.y || 0; // y position in pixels
+        let y = block.y || 0; // y position in grid units
 
-        maxY = Math.max(maxY, y + blockHeight);
+        maxY = Math.max(maxY, (y + 1) * 50); // Assuming each grid cell is 50px high
       }
     });
 
@@ -71,16 +71,18 @@ const SectionContent = ({ blocks, updateBlocks }) => {
     const blockToUpdate = updatedBlocks[blockIndex];
   
     const containerRect = containerRef.current.getBoundingClientRect();
-    const containerWidth = containerRect.width;
+    const cellWidth = containerRect.width / 24; // 24 columns
+    const cellHeight = 50; // Assuming each grid cell is 50px high
   
-    // Compute new x percentage based on 24-column grid without hardcoding grid size
-    const newPercentageX = ((blockToUpdate.x * containerWidth) / 100 + delta.x) / containerWidth * 100;
+    // Compute new x and y in grid units
+    const newX = Math.round((blockToUpdate.x + delta.x / cellWidth));
+    const newY = Math.round((blockToUpdate.y + delta.y / cellHeight));
   
-    // Clamp X values between 0% and 100% of the container
-    blockToUpdate.x = Math.max(0, Math.min(newPercentageX, 100));
-  
-    // Update y position in pixels
-    blockToUpdate.y = (blockToUpdate.y || 0) + delta.y;
+    // Clamp X values between 0 and 23 (24 columns)
+    blockToUpdate.x = Math.max(0, Math.min(newX, 23));
+    
+    // Clamp Y values to be non-negative
+    blockToUpdate.y = Math.max(0, newY);
   
     updateBlocks(updatedBlocks);
   };
@@ -88,7 +90,7 @@ const SectionContent = ({ blocks, updateBlocks }) => {
   return (
     <div
       ref={containerRef}
-      className="grid grid-cols-24 md:grid-cols-12 sm:grid-cols-6"
+      className="grid grid-cols-24 gap-0"
       style={{ height: `${containerHeight}px`, overflow: 'visible' }}
     >
       {previewMode ? (
@@ -107,19 +109,17 @@ const SectionContent = ({ blocks, updateBlocks }) => {
           collisionDetection={closestCenter}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
-          modifiers={[restrictMovement(containerRef)]}
+          modifiers={[restrictToGrid]}
         >
-          {/* Conditionally render grid overlay when dragging */}
-          {isDragging && (
-            <div
-              className="absolute inset-0 z-0 pointer-events-none"
-              style={{
-                backgroundSize: '4.16667% 50px', // 4.16667% width represents one column in a 24-column grid
-                backgroundImage:
-                  'linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px)',
-              }}
-            />
-          )}
+          {/* Render grid overlay */}
+          <div
+            className="absolute inset-0 z-0 pointer-events-none"
+            style={{
+              backgroundSize: '4.16667% 50px', // 4.16667% width represents one column in a 24-column grid
+              backgroundImage:
+                'linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px)',
+            }}
+          />
 
           {/* Render draggable blocks */}
           {blocks.map((block) => (

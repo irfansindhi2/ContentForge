@@ -25,8 +25,8 @@ const DraggableBlock = ({ block, setBlockDimensions }) => {
   // Apply absolute positioning based on block's x and y
   const style = {
     position: 'absolute',
-    left: `${block.x}%`,
-    top: `${block.y || 0}px`,
+    left: `${block.x * 4.16667}%`, // 4.16667% is the width of one column in a 24-column grid
+    top: `${block.y * 50}px`,
     zIndex: isDragging ? 10 : 1,
   };
 
