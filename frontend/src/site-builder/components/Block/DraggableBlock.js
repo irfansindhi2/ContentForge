@@ -1,20 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import Block from './Block';
 
-const DraggableBlock = ({ block, setBlockDimensions }) => {
+const DraggableBlock = React.memo(({ block, setBlockDimensions }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: block.id,
   });
 
   const blockRef = useRef(null);
-  const [shouldTransition, setShouldTransition] = useState(false);
 
-  const combinedRef = (node) => {
-    setNodeRef(node);
-    blockRef.current = node;
-  };
-
+  // Update dimensions when the block mounts or when its dimensions change
   useEffect(() => {
     if (blockRef.current) {
       const rect = blockRef.current.getBoundingClientRect();
@@ -22,26 +17,18 @@ const DraggableBlock = ({ block, setBlockDimensions }) => {
     }
   }, [block.id, setBlockDimensions]);
 
-  useEffect(() => {
-    if (!isDragging) {
-      const timeoutId = setTimeout(() => setShouldTransition(true), 50);
-      return () => clearTimeout(timeoutId);
-    } else {
-      setShouldTransition(false);
-    }
-  }, [isDragging]);
-
+  // Inline styles for positioning and transition
   const style = {
     zIndex: isDragging ? 10 : 1,
     transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
-    transition: shouldTransition ? 'transform 200ms ease' : 'none',
+    transition: !isDragging ? 'transform 200ms ease' : 'none',
   };
 
   return (
-    <div ref={combinedRef} style={style} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <Block block={block} />
     </div>
   );
-};
+});
 
 export default DraggableBlock;

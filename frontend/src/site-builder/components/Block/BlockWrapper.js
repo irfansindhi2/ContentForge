@@ -1,9 +1,10 @@
 import React, { useRef, useEffect } from 'react';
 import Block from './Block';
 
-const BlockWrapper = ({ block, setBlockDimensions }) => {
+const BlockWrapper = React.memo(({ block, setBlockDimensions }) => {
   const blockRef = useRef(null);
 
+  // Update block dimensions
   useEffect(() => {
     if (blockRef.current) {
       const rect = blockRef.current.getBoundingClientRect();
@@ -16,6 +17,6 @@ const BlockWrapper = ({ block, setBlockDimensions }) => {
       <Block block={block} />
     </div>
   );
-};
+});
 
 export default BlockWrapper;
