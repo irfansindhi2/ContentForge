@@ -10,16 +10,6 @@ export const snapToGrid = (containerRect, columns, rowHeight) => ({ transform })
   };
 };
 
-export const restrictToContainer = (containerRect) => ({ transform }) => {
-  if (!transform) return transform;
-
-  return {
-    ...transform,
-    x: Math.max(0, Math.min(transform.x, containerRect.width - 1)),
-    y: Math.max(0, transform.y),
-  };
-};
-
 // Helper function to convert grid coordinates to pixels
 export const gridToPixels = (x, y, containerRect, columns, rowHeight) => {
   const columnWidth = containerRect.width / columns;

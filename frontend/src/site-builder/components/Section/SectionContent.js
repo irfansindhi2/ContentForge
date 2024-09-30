@@ -12,7 +12,7 @@ import { PreviewModeContext } from '../../PreviewModeContext';
 import DraggableBlock from '../Block/DraggableBlock';
 import BlockWrapper from '../Block/BlockWrapper';
 import Block from '../Block/Block';
-import { snapToGrid, restrictToContainer, pixelsToGrid } from '../../utils/gridUtils';
+import { snapToGrid } from '../../utils/gridUtils';
 
 const SectionContent = ({ blocks, updateBlocks, columns = 24, rowHeight = 50 }) => {
   const { previewMode } = useContext(PreviewModeContext);
@@ -50,7 +50,7 @@ const SectionContent = ({ blocks, updateBlocks, columns = 24, rowHeight = 50 }) 
     });
 
     // Add some padding if needed
-    return `${maxY * rowHeight}px`;
+    return `${Math.max(maxY * rowHeight, 300)}px`; // Ensure a minimum height
   }, [blocks, blockDimensions, rowHeight]);
 
   // Define sensors for touch and mouse support
@@ -74,17 +74,14 @@ const SectionContent = ({ blocks, updateBlocks, columns = 24, rowHeight = 50 }) 
     const updatedBlocks = [...blocks];
     const blockToUpdate = updatedBlocks[blockIndex];
   
-    const { x: newGridX, y: newGridY } = pixelsToGrid(
-      blockToUpdate.x * containerRect.width / columns + delta.x,
-      blockToUpdate.y * rowHeight + delta.y,
-      containerRect,
-      columns,
-      rowHeight
-    );
+    // Calculate new position based on the delta
+    const cellWidth = containerRect.width / columns;
+    const newX = blockToUpdate.x + Math.round(delta.x / cellWidth);
+    const newY = blockToUpdate.y + Math.round(delta.y / rowHeight);
   
-    // Update block position
-    blockToUpdate.x = newGridX;
-    blockToUpdate.y = newGridY;
+    // Update block position, ensuring it stays within the grid
+    blockToUpdate.x = Math.max(0, Math.min(newX, columns - 1));
+    blockToUpdate.y = Math.max(0, newY);
   
     updateBlocks(updatedBlocks);
   };
@@ -123,7 +120,6 @@ const SectionContent = ({ blocks, updateBlocks, columns = 24, rowHeight = 50 }) 
           onDragEnd={handleDragEnd}
           modifiers={containerRect ? [
             snapToGrid(containerRect, columns, rowHeight),
-            restrictToContainer(containerRect)
           ] : []}
         >
           {/* Render grid overlay */}
