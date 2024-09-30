@@ -19,10 +19,7 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks }) => {
     updateBlocks([...blocks, newBlock]);
   };
 
-  // Increase padding
   const increasePadding = () => setPadding((prev) => Math.min(prev + 1, 10));
-  
-  // Decrease padding
   const decreasePadding = () => setPadding((prev) => Math.max(prev - 1, 0));
 
   return (
@@ -43,38 +40,28 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks }) => {
         </>
       )}
 
-      {/* Grid container with adjustable padding */}
+      {/* Outer container with stripes on padding */}
       <div
-        className={`relative border ${
+        className={`relative ${
           !previewMode ? 'hover:border-blue-500 border-transparent' : 'border-transparent'
         }`}
         style={{
           padding: `${padding}rem`,
-        }}
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
-      >
-        {/* Stripe Background Only on Padding Area */}
-        <div
-          className={`absolute inset-0 pointer-events-none ${
-            (isHovering || isDragging) && !previewMode ? '' : 'hidden'
-          }`}
-          style={{
-            padding: `${padding}rem`,
-            background:
-              `repeating-linear-gradient(
+          background: (isHovering || isDragging) && !previewMode
+            ? `repeating-linear-gradient(
                 135deg,
                 transparent,
                 transparent 2px,
                 rgba(0, 0, 0, 0.05) 2px,
                 rgba(0, 0, 0, 0.05) 4px
-              )`,
-            zIndex: 1,
-          }}
-        />
-
-        {/* Section Content */}
-        <div className="relative z-10">
+              )`
+            : 'transparent',
+        }}
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
+      >
+        {/* Inner container for content */}
+        <div className="relative bg-white">
           <SectionContent
             blocks={blocks}
             updateBlocks={updateBlocks}
