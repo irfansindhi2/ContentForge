@@ -1,8 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import Block from './Block';
-import { gridToPixels } from '../../utils/gridUtils';
 
-const BlockWrapper = ({ block, setBlockDimensions, columns, rowHeight, containerRect }) => {
+const BlockWrapper = ({ block, setBlockDimensions }) => {
   const blockRef = useRef(null);
 
   useEffect(() => {
@@ -12,18 +11,8 @@ const BlockWrapper = ({ block, setBlockDimensions, columns, rowHeight, container
     }
   }, [block.id, setBlockDimensions]);
 
-  // Apply positioning based on block's x and y
-  const style = containerRect
-    ? {
-        position: 'absolute',
-        left: `${(block.x / columns) * containerRect.width}px`,  // Proper calculation for left
-        top: `${block.y * rowHeight}px`,  // Proper calculation for top
-        width: `${(block.colSpan || 1) * (containerRect.width / columns)}px`,  // Adjust width according to column span
-      }
-    : {};
-
   return (
-    <div ref={blockRef} style={style}>
+    <div ref={blockRef} className="block-wrapper">
       <Block block={block} />
     </div>
   );

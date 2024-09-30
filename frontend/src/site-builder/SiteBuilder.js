@@ -17,9 +17,9 @@ const SiteBuilder = () => {
     id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     type,
     content,
-    x: 0,  // Default x coordinate
-    y: 0,  // Default y coordinate
-  });  
+    x: 0, // Default x coordinate
+    y: 0, // Default y coordinate
+  });
 
   const addSection = () => {
     const newSection = {
@@ -30,8 +30,8 @@ const SiteBuilder = () => {
   };
 
   const addBlockToSection = (sectionId, blockType = 'text') => {
-    setSections(prevSections =>
-      prevSections.map(section =>
+    setSections((prevSections) =>
+      prevSections.map((section) =>
         section.id === sectionId
           ? { ...section, blocks: [...section.blocks, createBlock(blockType)] }
           : section
@@ -40,8 +40,8 @@ const SiteBuilder = () => {
   };
 
   const updateBlocksInSection = (sectionId, newBlocks) => {
-    setSections(prevSections =>
-      prevSections.map(section =>
+    setSections((prevSections) =>
+      prevSections.map((section) =>
         section.id === sectionId ? { ...section, blocks: newBlocks } : section
       )
     );
