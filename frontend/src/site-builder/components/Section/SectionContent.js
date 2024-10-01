@@ -1,9 +1,10 @@
-import React, { useContext, useState, useMemo } from 'react';
+import React, { useContext, useState, useMemo, useRef } from 'react';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import { PreviewModeContext } from '../../PreviewModeContext';
 import Block from '../Block/Block';
 import GridOverlay from './GridOverlay';
 import { generateLayout, updateBlockLayout } from '../../utils/layoutUtils';
+import { useMeasure } from 'react-use';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 
@@ -13,6 +14,7 @@ const SectionContent = ({ blocks, updateBlocks }) => {
   const { previewMode } = useContext(PreviewModeContext);
   const [isDragging, setIsDragging] = useState(false);
   const [currentBreakpoint, setCurrentBreakpoint] = useState('lg');
+  const [ref, { width }] = useMeasure();
 
   const layout = useMemo(() => generateLayout(blocks), [blocks]);
 
@@ -30,12 +32,13 @@ const SectionContent = ({ blocks, updateBlocks }) => {
   };
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full" ref={ref}>
       {isDragging && !previewMode && (
         <GridOverlay 
           cols={cols[currentBreakpoint]}
           margin={margins[currentBreakpoint]}
           containerPadding={containerPadding}
+          containerWidth={width}
         />
       )}
       <ResponsiveGridLayout
