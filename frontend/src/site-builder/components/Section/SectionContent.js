@@ -9,11 +9,17 @@ import 'react-resizable/css/styles.css';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-const SectionContent = ({ blocks, updateBlocks, columns = 24, rowHeight = 50, gap = 2 }) => {
+const SectionContent = ({ blocks, updateBlocks }) => {
   const { previewMode } = useContext(PreviewModeContext);
   const [isDragging, setIsDragging] = useState(false);
+  const [currentBreakpoint, setCurrentBreakpoint] = useState('lg');
 
   const layout = useMemo(() => generateLayout(blocks), [blocks]);
+
+  const breakpoints = { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 };
+  const cols = { lg: 24, md: 18, sm: 12, xs: 6, xxs: 3 };
+  const rowHeights = { lg: 50, md: 40, sm: 30, xs: 20, xxs: 10 };
+  const margins = { lg: [10, 10], md: [8, 8], sm: [6, 6], xs: [4, 4], xxs: [2, 2] };
 
   const handleLayoutChange = (newLayout) => {
     if (!previewMode) {
@@ -24,20 +30,23 @@ const SectionContent = ({ blocks, updateBlocks, columns = 24, rowHeight = 50, ga
 
   return (
     <div className="relative w-full">
-      {isDragging && !previewMode && <GridOverlay columns={columns} />}
+      {isDragging && !previewMode && (
+        <GridOverlay columns={cols[currentBreakpoint]} gap={margins[currentBreakpoint][0]} />
+      )}
       <ResponsiveGridLayout
-        className={`layout gap-${gap}`}
+        className="layout"
         layouts={{ lg: layout }}
-        breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-        cols={{ lg: columns, md: columns, sm: columns, xs: columns, xxs: columns }}
-        rowHeight={rowHeight}
+        breakpoints={breakpoints}
+        cols={cols}
+        rowHeight={rowHeights[currentBreakpoint]}
+        margin={margins[currentBreakpoint]}
+        containerPadding={[0, 0]}
+        onBreakpointChange={(breakpoint) => setCurrentBreakpoint(breakpoint)}
         onLayoutChange={handleLayoutChange}
         isDraggable={!previewMode}
         isResizable={!previewMode}
         compactType={null}
         preventCollision
-        margin={[0, 0]}
-        containerPadding={[0, 0]}
         onDragStart={() => setIsDragging(true)}
         onDragStop={() => setIsDragging(false)}
         onResizeStart={() => setIsDragging(true)}

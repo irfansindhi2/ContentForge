@@ -56,7 +56,7 @@ const SiteBuilder = () => {
         Add Section
       </button>
 
-      <div id="preview-section" className="mt-4">
+      <div id="preview-section">
         {sections.map((section) => (
           <SectionContainer
             key={section.id}

@@ -1,4 +1,3 @@
-// Preview.js
 import React, { useContext, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import SectionContainer from './components/Section/SectionContainer';
@@ -27,7 +26,7 @@ const Preview = () => {
   }
 
   return (
-    <div className="p-4">
+    <div>
       {sections.map((section) => (
         <SectionContainer
           key={section.id}
