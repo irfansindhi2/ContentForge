@@ -35,11 +35,44 @@ const SectionContent = ({ blocks, updateBlocks }) => {
     return Math.max(Math.floor(max), 1);
   }, [layouts, currentBreakpoint]);
 
+  // New state variable for overlay max rows
+  const [overlayMaxRows, setOverlayMaxRows] = useState(maxRows);
+
   const handleLayoutChange = (currentLayout, allLayouts) => {
     if (!previewMode) {
       const updatedBlocks = updateBlockLayout(blocks, currentLayout);
       updateBlocks(updatedBlocks);
     }
+  };
+
+  const handleDrag = (layout, oldItem, newItem, placeholder) => {
+    const totalRows = placeholder.y + placeholder.h;
+    if (totalRows !== overlayMaxRows) {
+      setOverlayMaxRows(totalRows);
+    }
+  };
+
+  const handleDragStart = () => {
+    setIsDragging(true);
+  };
+
+  const handleDragStop = () => {
+    setIsDragging(false);
+    // Reset overlay max rows after dragging
+    setOverlayMaxRows(maxRows);
+  };
+
+  const handleResize = (layout, oldItem, newItem, placeholder) => {
+    const totalRows = placeholder.y + placeholder.h;
+    if (totalRows !== overlayMaxRows) {
+      setOverlayMaxRows(totalRows);
+    }
+  };
+
+  const handleResizeStop = () => {
+    setIsDragging(false);
+    // Reset overlay max rows after resizing
+    setOverlayMaxRows(maxRows);
   };
 
   return (
@@ -51,7 +84,7 @@ const SectionContent = ({ blocks, updateBlocks }) => {
           containerPadding={containerPadding}
           containerWidth={width}
           rowHeight={rowHeights[currentBreakpoint]}
-          maxRows={maxRows}
+          maxRows={overlayMaxRows}
         />
       )}
       <ResponsiveGridLayout
@@ -68,10 +101,12 @@ const SectionContent = ({ blocks, updateBlocks }) => {
         isResizable={!previewMode}
         compactType={null}
         preventCollision
-        onDragStart={() => setIsDragging(true)}
-        onDragStop={() => setIsDragging(false)}
-        onResizeStart={() => setIsDragging(true)}
-        onResizeStop={() => setIsDragging(false)}
+        onDragStart={handleDragStart}
+        onDrag={handleDrag} // Update overlay during drag
+        onDragStop={handleDragStop}
+        onResizeStart={handleDragStart}
+        onResize={handleResize} // Update overlay during resize
+        onResizeStop={handleResizeStop}
       >
         {blocks.map((block) => (
           <div key={block.id} className="bg-white shadow-lg rounded-md overflow-hidden">
