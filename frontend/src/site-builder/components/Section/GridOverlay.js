@@ -1,20 +1,23 @@
 import React from 'react';
 
-const GridOverlay = ({ columns, gap }) => {
+const GridOverlay = ({ cols, margin, containerPadding }) => {
   return (
-    <div className="absolute inset-0 pointer-events-none z-10">
+    <div className="absolute inset-0 pointer-events-none z-10" style={{ margin: -1 }}>
       <div
         className="w-full h-full grid"
         style={{
-          gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-          gap: `${gap}px`,
+          gridTemplateColumns: `repeat(${cols}, 1fr)`,
+          gap: `${margin[1]}px ${margin[0]}px`,
+          padding: `${containerPadding[1]}px ${containerPadding[0]}px`,
+          marginLeft: `-${margin[0] / 2}px`,
+          marginRight: `-${margin[0] / 2}px`,
         }}
       >
-        {Array.from({ length: columns }).map((_, index) => (
+        {Array.from({ length: cols }).map((_, index) => (
           <div
             key={index}
-            className="h-full bg-blue-100 bg-opacity-10 border-r border-blue-200 border-opacity-60 last:border-r-0"
-          ></div>
+            className="h-full bg-blue-100 bg-opacity-60 border-r border-blue-300 border-opacity-20 last:border-r-0"
+          />
         ))}
       </div>
     </div>

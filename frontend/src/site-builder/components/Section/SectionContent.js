@@ -20,6 +20,7 @@ const SectionContent = ({ blocks, updateBlocks }) => {
   const cols = { lg: 24, md: 18, sm: 12, xs: 6, xxs: 3 };
   const rowHeights = { lg: 50, md: 40, sm: 30, xs: 20, xxs: 10 };
   const margins = { lg: [10, 10], md: [8, 8], sm: [6, 6], xs: [4, 4], xxs: [2, 2] };
+  const containerPadding = [0, 0];
 
   const handleLayoutChange = (newLayout) => {
     if (!previewMode) {
@@ -31,7 +32,11 @@ const SectionContent = ({ blocks, updateBlocks }) => {
   return (
     <div className="relative w-full">
       {isDragging && !previewMode && (
-        <GridOverlay columns={cols[currentBreakpoint]} gap={margins[currentBreakpoint][0]} />
+        <GridOverlay 
+          cols={cols[currentBreakpoint]}
+          margin={margins[currentBreakpoint]}
+          containerPadding={containerPadding}
+        />
       )}
       <ResponsiveGridLayout
         className="layout"
@@ -40,7 +45,7 @@ const SectionContent = ({ blocks, updateBlocks }) => {
         cols={cols}
         rowHeight={rowHeights[currentBreakpoint]}
         margin={margins[currentBreakpoint]}
-        containerPadding={[0, 0]}
+        containerPadding={containerPadding}
         onBreakpointChange={(breakpoint) => setCurrentBreakpoint(breakpoint)}
         onLayoutChange={handleLayoutChange}
         isDraggable={!previewMode}
