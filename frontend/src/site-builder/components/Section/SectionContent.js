@@ -24,6 +24,17 @@ const SectionContent = ({ blocks, updateBlocks }) => {
   const margins = { lg: [10, 10], md: [8, 8], sm: [6, 6], xs: [4, 4], xxs: [2, 2] };
   const containerPadding = [0, 0];
 
+  const maxRows = useMemo(() => {
+    if (!layout || layout.length === 0) {
+      return 1; // Default to at least one row
+    }
+    const max = layout.reduce((max, item) => {
+      const total = (item.y || 0) + (item.h || 0);
+      return Math.max(max, total);
+    }, 0);
+    return Math.max(Math.floor(max), 1); // Ensure maxRows is at least 1
+  }, [layout]);  
+
   const handleLayoutChange = (newLayout) => {
     if (!previewMode) {
       const updatedBlocks = updateBlockLayout(blocks, newLayout);
@@ -39,6 +50,8 @@ const SectionContent = ({ blocks, updateBlocks }) => {
           margin={margins[currentBreakpoint]}
           containerPadding={containerPadding}
           containerWidth={width}
+          rowHeight={rowHeights[currentBreakpoint]}
+          maxRows={maxRows}
         />
       )}
       <ResponsiveGridLayout
