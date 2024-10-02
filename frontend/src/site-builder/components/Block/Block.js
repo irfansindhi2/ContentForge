@@ -8,7 +8,7 @@ const Block = React.memo(({ block }) => {
 
   return (
     <div
-      className="h-full w-full bg-white shadow-lg rounded-md overflow-hidden box-border"
+      className="h-full w-full"
       style={{ gridColumn: `span ${colSpan}`, gridRow: `span ${rowSpan}` }}
     >
       {block.type === 'text' && <p className="text-sm p-4">{block.content}</p>}
