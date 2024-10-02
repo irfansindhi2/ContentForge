@@ -2,7 +2,7 @@ import React, { useContext, useState, useRef } from 'react';
 import SectionContent from './SectionContent';
 import { PreviewModeContext } from '../../PreviewModeContext';
 import { mergeSettings } from '../../utils/settingsUtils';
-import { Settings, PlusCircle, Copy, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
+import { Settings, PlusCircle, Copy, Trash2, ArrowUp, ArrowDown, Image, CreditCard } from 'lucide-react';
 
 const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSettings, onDuplicate, onDelete, onMoveUp, onMoveDown, isFirst, isLast}) => {
   const mergedSettings = mergeSettings(settings);
@@ -11,13 +11,15 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const deleteModalRef = useRef(null);
 
-  const addBlock = () => {
+  const addBlock = (type = 'text') => {
     const newBlock = {
-      id: `${sectionId}-${blocks.length + 1}`,
-      type: 'text',
-      content: `Block ${blocks.length + 1} of Section ${sectionId}`,
+      id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      type: type,
+      content: type === 'carousel' ? [] : `New ${type} block`,
       x: 0,
       y: Infinity,
+      colSpan: type === 'carousel' ? 6 : 2,
+      rowSpan: type === 'carousel' ? 4 : 2,
     };
     updateBlocks([...blocks, newBlock]);
   };
@@ -68,12 +70,26 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
     >
       {!previewMode && (
         <>
-          <button 
-            className="btn btn-circle absolute top-2 left-2 z-10" 
-            onClick={addBlock}
-          >
-            <PlusCircle className="w-5 h-5" />
-          </button>
+          <div className="absolute top-2 left-2 z-10 flex space-x-2">
+            <button 
+              className="btn btn-circle" 
+              onClick={() => addBlock('text')}
+            >
+              <PlusCircle className="w-5 h-5" />
+            </button>
+            <button 
+              className="btn btn-circle" 
+              onClick={() => addBlock('carousel')}
+            >
+              <Image className="w-5 h-5" />
+            </button>
+            <button 
+              className="btn btn-circle" 
+              onClick={() => addBlock('card')}
+            >
+              <CreditCard className="w-5 h-5" />
+            </button>
+          </div>
           <div className="absolute top-2 right-2 z-10 flex space-x-2">
             {!isFirst && (
               <button 

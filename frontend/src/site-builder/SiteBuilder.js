@@ -15,13 +15,17 @@ const SiteBuilder = () => {
     navigate('/preview', { state: { sections } });
   };
 
-  const createBlock = (type = 'text', content = '') => ({
-    id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    type,
-    content,
-    x: 0, // Default x coordinate
-    y: 0, // Default y coordinate
-  });
+  const createBlock = (type = 'text', content = '') => {
+    return {
+      id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      type,
+      content: blockContent,
+      x: 0,
+      y: 0,
+      colSpan: type === 'carousel' ? 6 : 2, // Make carousel blocks wider by default
+      rowSpan: type === 'carousel' ? 4 : 2, // Make carousel blocks taller by default
+    };
+  };
 
   const addSection = () => {
     const newSection = {
