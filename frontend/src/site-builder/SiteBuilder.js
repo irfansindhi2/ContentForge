@@ -22,8 +22,6 @@ const SiteBuilder = () => {
       content: blockContent,
       x: 0,
       y: 0,
-      colSpan: type === 'carousel' ? 6 : 2, // Make carousel blocks wider by default
-      rowSpan: type === 'carousel' ? 4 : 2, // Make carousel blocks taller by default
     };
   };
 

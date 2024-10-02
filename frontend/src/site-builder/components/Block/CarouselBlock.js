@@ -18,11 +18,11 @@ const CarouselBlock = ({ items = [] }) => {
   return (
     <div className="carousel carousel-center rounded-box w-full h-full p-4 space-x-4 bg-neutral">
       {carouselItems.map((item, index) => (
-        <div key={index} className="carousel-item">
+        <div key={index} className="carousel-item h-full">
           <img
             src={item.src}
             alt={item.alt}
-            className="rounded-box object-cover h-64 w-full"
+            className="rounded-box object-cover h-full w-full"
           />
         </div>
       ))}

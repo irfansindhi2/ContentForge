@@ -18,8 +18,6 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
       content: type === 'carousel' ? [] : `New ${type} block`,
       x: 0,
       y: Infinity,
-      colSpan: type === 'carousel' ? 6 : 2,
-      rowSpan: type === 'carousel' ? 4 : 2,
     };
     updateBlocks([...blocks, newBlock]);
   };
