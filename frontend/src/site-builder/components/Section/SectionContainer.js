@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useRef } from 'react';
 import SectionContent from './SectionContent';
 import { PreviewModeContext } from '../../PreviewModeContext';
 import { mergeSettings } from '../../utils/settingsUtils';
@@ -8,6 +8,8 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
   const mergedSettings = mergeSettings(settings);
   const { previewMode } = useContext(PreviewModeContext);
   const [showSettings, setShowSettings] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const deleteModalRef = useRef(null);
 
   const addBlock = () => {
     const newBlock = {
@@ -34,10 +36,20 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
     }
   };
 
-  const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this section?')) {
-      onDelete();
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+    if (deleteModalRef.current) {
+      deleteModalRef.current.showModal();
     }
+  };
+
+  const handleDeleteConfirm = () => {
+    onDelete();
+    setShowDeleteModal(false);
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
   };
 
   const marginOptions = [
@@ -93,7 +105,7 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
             </button>
             <button 
               className="btn btn-circle btn-error" 
-              onClick={handleDelete}
+              onClick={handleDeleteClick}
             >
               <Trash2 className="w-5 h-5" />
             </button>
@@ -121,6 +133,21 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
       <div className="relative">
         <SectionContent blocks={blocks} updateBlocks={updateBlocks} settings={mergedSettings} />
       </div>
+
+      {/* Daisy UI Modal for delete confirmation */}
+      <dialog ref={deleteModalRef} className="modal modal-bottom sm:modal-middle">
+        <form method="dialog" className="modal-box">
+          <h3 className="font-bold text-lg">Confirm Deletion</h3>
+          <p className="py-4">Are you sure you want to delete this section? This action cannot be undone.</p>
+          <div className="modal-action">
+            <button className="btn" onClick={handleDeleteCancel}>Cancel</button>
+            <button className="btn btn-error" onClick={handleDeleteConfirm}>Delete</button>
+          </div>
+        </form>
+        <form method="dialog" className="modal-backdrop">
+          <button onClick={handleDeleteCancel}>close</button>
+        </form>
+      </dialog>
     </div>
   );
 };
