@@ -57,7 +57,7 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
       {!previewMode && (
         <>
           <button 
-            className="btn btn-circle btn-primary absolute top-2 left-2 z-10" 
+            className="btn btn-circle absolute top-2 left-2 z-10" 
             onClick={addBlock}
           >
             <PlusCircle className="w-5 h-5" />
@@ -65,7 +65,7 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
           <div className="absolute top-2 right-2 z-10 flex space-x-2">
             {!isFirst && (
               <button 
-                className="btn btn-circle btn-secondary" 
+                className="btn btn-circle" 
                 onClick={onMoveUp}
               >
                 <ArrowUp className="w-5 h-5" />
@@ -73,20 +73,20 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
             )}
             {!isLast && (
               <button 
-                className="btn btn-circle btn-secondary" 
+                className="btn btn-circle" 
                 onClick={onMoveDown}
               >
                 <ArrowDown className="w-5 h-5" />
               </button>
             )}
             <button 
-              className="btn btn-circle btn-secondary" 
+              className="btn btn-circle" 
               onClick={toggleSettings}
             >
               <Settings className="w-5 h-5" />
             </button>
             <button 
-              className="btn btn-circle btn-accent" 
+              className="btn btn-circle" 
               onClick={handleDuplicate}
             >
               <Copy className="w-5 h-5" />
