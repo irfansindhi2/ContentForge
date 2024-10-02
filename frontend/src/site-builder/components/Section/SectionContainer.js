@@ -2,9 +2,9 @@ import React, { useContext, useState } from 'react';
 import SectionContent from './SectionContent';
 import { PreviewModeContext } from '../../PreviewModeContext';
 import { mergeSettings } from '../../utils/settingsUtils';
-import { Settings, PlusCircle, Copy } from 'lucide-react';
+import { Settings, PlusCircle, Copy, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 
-const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSettings, onDuplicate }) => {
+const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSettings, onDuplicate, onDelete, onMoveUp, onMoveDown, isFirst, isLast}) => {
   const mergedSettings = mergeSettings(settings);
   const { previewMode } = useContext(PreviewModeContext);
   const [showSettings, setShowSettings] = useState(false);
@@ -34,6 +34,12 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
     }
   };
 
+  const handleDelete = () => {
+    if (window.confirm('Are you sure you want to delete this section?')) {
+      onDelete();
+    }
+  };
+
   const marginOptions = [
     { value: 'extra-large', label: 'XL' },
     { value: 'large', label: 'L' },
@@ -56,18 +62,42 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
           >
             <PlusCircle className="w-5 h-5" />
           </button>
-          <button 
-            className="btn btn-circle btn-secondary absolute top-2 right-12 z-10" 
-            onClick={toggleSettings}
-          >
-            <Settings className="w-5 h-5" />
-          </button>
-          <button 
-            className="btn btn-circle btn-accent absolute top-2 right-2 z-10" 
-            onClick={handleDuplicate}
-          >
-            <Copy className="w-5 h-5" />
-          </button>
+          <div className="absolute top-2 right-2 z-10 flex space-x-2">
+            {!isFirst && (
+              <button 
+                className="btn btn-circle btn-secondary" 
+                onClick={onMoveUp}
+              >
+                <ArrowUp className="w-5 h-5" />
+              </button>
+            )}
+            {!isLast && (
+              <button 
+                className="btn btn-circle btn-secondary" 
+                onClick={onMoveDown}
+              >
+                <ArrowDown className="w-5 h-5" />
+              </button>
+            )}
+            <button 
+              className="btn btn-circle btn-secondary" 
+              onClick={toggleSettings}
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+            <button 
+              className="btn btn-circle btn-accent" 
+              onClick={handleDuplicate}
+            >
+              <Copy className="w-5 h-5" />
+            </button>
+            <button 
+              className="btn btn-circle btn-error" 
+              onClick={handleDelete}
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
+          </div>
         </>
       )}
       {showSettings && (

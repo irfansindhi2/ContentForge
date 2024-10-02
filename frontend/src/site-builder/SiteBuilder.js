@@ -71,6 +71,30 @@ const SiteBuilder = () => {
     newSectionRef.current = newSection.id;
   };
 
+  const deleteSection = (sectionId) => {
+    setSections((prevSections) => prevSections.filter((section) => section.id !== sectionId));
+  };
+
+  const moveSection = (sectionId, direction) => {
+    setSections((prevSections) => {
+      const index = prevSections.findIndex((section) => section.id === sectionId);
+      if (index === -1) return prevSections;
+
+      const newSections = [...prevSections];
+      const [removedSection] = newSections.splice(index, 1);
+      
+      if (direction === 'up' && index > 0) {
+        newSections.splice(index - 1, 0, removedSection);
+      } else if (direction === 'down' && index < prevSections.length - 1) {
+        newSections.splice(index + 1, 0, removedSection);
+      } else {
+        newSections.splice(index, 0, removedSection);
+      }
+
+      return newSections;
+    });
+  };
+
   useEffect(() => {
     if (newSectionRef.current) {
       const newSectionElement = document.getElementById(newSectionRef.current);
@@ -91,7 +115,7 @@ const SiteBuilder = () => {
       </button>
 
       <div id="preview-section">
-        {sections.map((section) => (
+        {sections.map((section, index) => (
           <SectionContainer
             key={section.id}
             sectionId={section.id}
@@ -101,6 +125,11 @@ const SiteBuilder = () => {
             settings={section.settings}
             updateSettings={(newSettings) => updateSettingsInSection(section.id, newSettings)}
             onDuplicate={duplicateSection}
+            onDelete={() => deleteSection(section.id)}
+            onMoveUp={() => moveSection(section.id, 'up')}
+            onMoveDown={() => moveSection(section.id, 'down')}
+            isFirst={index === 0}
+            isLast={index === sections.length - 1}
           />
         ))}
       </div>
