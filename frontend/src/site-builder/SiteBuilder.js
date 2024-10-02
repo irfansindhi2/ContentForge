@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SectionContainer from './components/Section/SectionContainer';
 import { PreviewModeContext } from './PreviewModeContext';
+import defaultSettings from './defaultSettings';
 
 const SiteBuilder = () => {
   const [sections, setSections] = useState([]);
@@ -25,6 +26,7 @@ const SiteBuilder = () => {
     const newSection = {
       id: `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       blocks: [],
+      defaultSettings
     };
     setSections([...sections, newSection]);
   };
@@ -47,6 +49,14 @@ const SiteBuilder = () => {
     );
   };
 
+  const updateSettingsInSection = (sectionId, newSettings) => {
+    setSections((prevSections) =>
+      prevSections.map((section) =>
+        section.id === sectionId ? { ...section, settings: newSettings } : section
+      )
+    );
+  };
+
   return (
     <div>
       <button className="btn btn-primary" onClick={handlePreview}>
@@ -64,6 +74,8 @@ const SiteBuilder = () => {
             blocks={section.blocks}
             updateBlocks={(newBlocks) => updateBlocksInSection(section.id, newBlocks)}
             addBlock={(blockType) => addBlockToSection(section.id, blockType)}
+            settings={section.settings}
+            updateSettings={(newSettings) => updateSettingsInSection(section.id, newSettings)}
           />
         ))}
       </div>

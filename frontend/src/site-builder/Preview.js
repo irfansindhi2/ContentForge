@@ -2,6 +2,7 @@ import React, { useContext, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import SectionContainer from './components/Section/SectionContainer';
 import { PreviewModeContext } from './PreviewModeContext';
+import defaultSettings from './defaultSettings';
 
 const Preview = () => {
   const location = useLocation();
@@ -25,13 +26,20 @@ const Preview = () => {
     return null;
   }
 
+  // Ensure each section has settings
+  const sectionsWithSettings = sections.map((section) => ({
+    ...section,
+    settings: section.settings || defaultSettings, // Provide default settings
+  }));
+
   return (
     <div>
-      {sections.map((section) => (
+      {sectionsWithSettings.map((section) => (
         <SectionContainer
           key={section.id}
           sectionId={section.id}
           blocks={section.blocks}
+          settings={section.settings}
           updateBlocks={() => {}} // No updates in preview mode
         />
       ))}
