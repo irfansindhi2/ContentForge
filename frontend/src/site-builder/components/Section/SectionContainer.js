@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react';
 import SectionContent from './SectionContent';
 import { PreviewModeContext } from '../../PreviewModeContext';
 import { mergeSettings } from '../../utils/settingsUtils';
+import { Settings, PlusCircle } from 'lucide-react';
 
 const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSettings }) => {
   const mergedSettings = mergeSettings(settings);
@@ -23,39 +24,56 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
     setShowSettings(!showSettings);
   };
 
-  const handleSettingsChange = (event) => {
-    const { name, value } = event.target;
-    updateSettings({ ...mergedSettings, [name]: value });
+  const handleSettingsChange = (value) => {
+    updateSettings({ ...mergedSettings, margins: value });
   };
+
+  const marginOptions = [
+    { value: 'extra-large', label: 'XL' },
+    { value: 'large', label: 'L' },
+    { value: 'medium', label: 'M' },
+    { value: 'small', label: 'S' },
+    { value: 'extra-small', label: 'XS' },
+    { value: 'none', label: 'None' },
+  ];
 
   return (
     <div className="relative w-full">
       {!previewMode && (
         <>
-          <button className="btn btn-primary absolute top-2 left-2 z-10" onClick={addBlock}>
-            Add Block
+          <button 
+            className="btn btn-circle btn-primary absolute top-2 left-2 z-10" 
+            onClick={addBlock}
+          >
+            <PlusCircle className="w-5 h-5" />
           </button>
-          <button className="btn btn-secondary absolute top-2 left-20 z-10" onClick={toggleSettings}>
-            Settings
+          <button 
+            className="btn btn-circle btn-secondary absolute top-2 right-2 z-10" 
+            onClick={toggleSettings}
+          >
+            <Settings className="w-5 h-5" />
           </button>
-          {showSettings && (
-            <div className="absolute top-10 left-20 bg-white p-4 shadow-lg z-20">
-              <label>
-                Margins:
-                <select name="margins" value={mergedSettings.margins} onChange={handleSettingsChange}>
-                  <option value="extra-large">Extra Large</option>
-                  <option value="large">Large</option>
-                  <option value="medium">Medium</option>
-                  <option value="small">Small</option>
-                  <option value="extra-small">Extra Small</option>
-                  <option value="none">None</option>
-                </select>
-              </label>
-            </div>
-          )}
         </>
       )}
-      <div className="relative bg-white">
+      {showSettings && (
+        <div className="card bg-base-100 shadow-xl absolute top-14 right-2 z-20 p-4">
+          <h2 className="text-lg font-bold mb-2">Cell Spacing</h2>
+          <div className="join">
+            {marginOptions.map((option) => (
+              <input 
+                key={option.value}
+                type="radio" 
+                name="margins" 
+                aria-label={option.label}
+                className="join-item btn btn-sm"
+                checked={mergedSettings.margins === option.value}
+                onChange={() => handleSettingsChange(option.value)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+      <div className="relative">
         <SectionContent blocks={blocks} updateBlocks={updateBlocks} settings={mergedSettings} />
       </div>
     </div>

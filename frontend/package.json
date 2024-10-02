@@ -19,6 +19,7 @@
     "cors": "^2.8.5",
     "daisyui": "^4.12.10",
     "gridstack": "^10.3.1",
+    "lucide-react": "^0.447.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-grid-layout": "^1.4.4",
