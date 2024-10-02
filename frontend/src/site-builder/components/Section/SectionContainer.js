@@ -2,9 +2,9 @@ import React, { useContext, useState } from 'react';
 import SectionContent from './SectionContent';
 import { PreviewModeContext } from '../../PreviewModeContext';
 import { mergeSettings } from '../../utils/settingsUtils';
-import { Settings, PlusCircle } from 'lucide-react';
+import { Settings, PlusCircle, Copy } from 'lucide-react';
 
-const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSettings }) => {
+const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSettings, onDuplicate }) => {
   const mergedSettings = mergeSettings(settings);
   const { previewMode } = useContext(PreviewModeContext);
   const [showSettings, setShowSettings] = useState(false);
@@ -28,6 +28,12 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
     updateSettings({ ...mergedSettings, margins: value });
   };
 
+  const handleDuplicate = () => {
+    if (onDuplicate) {
+      onDuplicate(sectionId, blocks, settings);
+    }
+  };
+
   const marginOptions = [
     { value: 'extra-large', label: 'XL' },
     { value: 'large', label: 'L' },
@@ -38,7 +44,10 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
   ];
 
   return (
-    <div className="relative w-full">
+    <div 
+      id={sectionId} 
+      className={`relative w-full ${!previewMode ? 'hover:outline hover:outline-2 hover:outline-blue-500 hover:outline-offset-[-2px] p-2 my-2' : ''}`}
+    >
       {!previewMode && (
         <>
           <button 
@@ -48,10 +57,16 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
             <PlusCircle className="w-5 h-5" />
           </button>
           <button 
-            className="btn btn-circle btn-secondary absolute top-2 right-2 z-10" 
+            className="btn btn-circle btn-secondary absolute top-2 right-12 z-10" 
             onClick={toggleSettings}
           >
             <Settings className="w-5 h-5" />
+          </button>
+          <button 
+            className="btn btn-circle btn-accent absolute top-2 right-2 z-10" 
+            onClick={handleDuplicate}
+          >
+            <Copy className="w-5 h-5" />
           </button>
         </>
       )}

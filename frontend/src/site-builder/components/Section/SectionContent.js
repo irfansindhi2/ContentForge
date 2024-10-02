@@ -1,4 +1,4 @@
-import React, { useContext, useState, useMemo, useRef } from 'react';
+import React, { useContext, useState, useMemo, useRef, useEffect } from 'react';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import { PreviewModeContext } from '../../PreviewModeContext';
 import Block from '../Block/Block';
@@ -11,7 +11,7 @@ import 'react-resizable/css/styles.css';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-const SectionContent = ({ blocks, updateBlocks, settings}) => {
+const SectionContent = ({ blocks, updateBlocks, settings }) => {
   const mergedSettings = mergeSettings(settings);
 
   const { previewMode } = useContext(PreviewModeContext);
@@ -46,8 +46,15 @@ const SectionContent = ({ blocks, updateBlocks, settings}) => {
     return Math.max(Math.floor(max), 1);
   }, [layouts, currentBreakpoint]);
 
-  // New state variable for overlay max rows
   const [overlayMaxRows, setOverlayMaxRows] = useState(maxRows);
+
+  useEffect(() => {
+    const minHeight = rowHeights[currentBreakpoint];
+    const containerElement = ref.current;
+    if (containerElement) {
+      containerElement.style.minHeight = `${minHeight}px`;
+    }
+  }, [currentBreakpoint, rowHeights, ref]);
 
   const handleLayoutChange = (currentLayout, allLayouts) => {
     if (!previewMode) {
@@ -57,7 +64,7 @@ const SectionContent = ({ blocks, updateBlocks, settings}) => {
   };
 
   const handleDrag = (layout, oldItem, newItem, placeholder) => {
-    const totalRows = placeholder.y + placeholder.h;
+    const totalRows = Math.max(placeholder.y + placeholder.h, 1);
     if (totalRows !== overlayMaxRows) {
       setOverlayMaxRows(totalRows);
     }
@@ -69,12 +76,11 @@ const SectionContent = ({ blocks, updateBlocks, settings}) => {
 
   const handleDragStop = () => {
     setIsDragging(false);
-    // Reset overlay max rows after dragging
-    setOverlayMaxRows(maxRows);
+    setOverlayMaxRows(Math.max(maxRows, 1));
   };
 
   const handleResize = (layout, oldItem, newItem, placeholder) => {
-    const totalRows = placeholder.y + placeholder.h;
+    const totalRows = Math.max(placeholder.y + placeholder.h, 1);
     if (totalRows !== overlayMaxRows) {
       setOverlayMaxRows(totalRows);
     }
@@ -82,20 +88,19 @@ const SectionContent = ({ blocks, updateBlocks, settings}) => {
 
   const handleResizeStop = () => {
     setIsDragging(false);
-    // Reset overlay max rows after resizing
-    setOverlayMaxRows(maxRows);
+    setOverlayMaxRows(Math.max(maxRows, 1));
   };
 
   return (
-    <div className="relative w-full" ref={ref}>
-      {isDragging && !previewMode && (
+    <div className="relative w-full" ref={ref} style={{ minHeight: `${rowHeights[currentBreakpoint]}px` }}>
+      {isDragging && !previewMode && width > 0 && (
         <GridOverlay
           cols={cols[currentBreakpoint]}
           margin={margins[currentBreakpoint]}
           containerPadding={containerPadding}
           containerWidth={width}
           rowHeight={rowHeights[currentBreakpoint]}
-          maxRows={overlayMaxRows}
+          maxRows={Math.max(overlayMaxRows, 1)}
         />
       )}
       <ResponsiveGridLayout
@@ -113,10 +118,10 @@ const SectionContent = ({ blocks, updateBlocks, settings}) => {
         compactType={null}
         preventCollision
         onDragStart={handleDragStart}
-        onDrag={handleDrag} // Update overlay during drag
+        onDrag={handleDrag}
         onDragStop={handleDragStop}
         onResizeStart={handleDragStart}
-        onResize={handleResize} // Update overlay during resize
+        onResize={handleResize}
         onResizeStop={handleResizeStop}
       >
         {blocks.map((block) => (

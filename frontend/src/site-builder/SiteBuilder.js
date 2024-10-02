@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SectionContainer from './components/Section/SectionContainer';
 import { PreviewModeContext } from './PreviewModeContext';
@@ -8,6 +8,7 @@ const SiteBuilder = () => {
   const [sections, setSections] = useState([]);
   const { setPreviewMode } = useContext(PreviewModeContext);
   const navigate = useNavigate();
+  const newSectionRef = useRef(null);
 
   const handlePreview = () => {
     setPreviewMode(true);
@@ -26,7 +27,7 @@ const SiteBuilder = () => {
     const newSection = {
       id: `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       blocks: [],
-      defaultSettings
+      settings: defaultSettings
     };
     setSections([...sections, newSection]);
   };
@@ -57,6 +58,29 @@ const SiteBuilder = () => {
     );
   };
 
+  const duplicateSection = (sectionId, blocks, settings) => {
+    const newSection = {
+      id: `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      blocks: blocks.map(block => ({
+        ...block,
+        id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      })),
+      settings: { ...settings }
+    };
+    setSections(prevSections => [...prevSections, newSection]);
+    newSectionRef.current = newSection.id;
+  };
+
+  useEffect(() => {
+    if (newSectionRef.current) {
+      const newSectionElement = document.getElementById(newSectionRef.current);
+      if (newSectionElement) {
+        newSectionElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      newSectionRef.current = null;
+    }
+  }, [sections]);
+
   return (
     <div>
       <button className="btn btn-primary" onClick={handlePreview}>
@@ -76,6 +100,7 @@ const SiteBuilder = () => {
             addBlock={(blockType) => addBlockToSection(section.id, blockType)}
             settings={section.settings}
             updateSettings={(newSettings) => updateSettingsInSection(section.id, newSettings)}
+            onDuplicate={duplicateSection}
           />
         ))}
       </div>
