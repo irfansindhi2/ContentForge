@@ -132,7 +132,7 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
         onResizeStop={handleResizeStop}
       >
         {blocks.map((block) => (
-          <div key={block.id} className="bg-white shadow-lg rounded-md overflow-hidden">
+          <div key={block.id} className="">
             <Block 
               block={block} 
               updateBlockContent={(newContent) => updateBlockContent(block.id, newContent)} 
