@@ -132,10 +132,10 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
         onResizeStop={handleResizeStop}
       >
         {blocks.map((block) => (
-          <div key={block.id} className="">
-            <Block 
-              block={block} 
-              updateBlockContent={(newContent) => updateBlockContent(block.id, newContent)} 
+          <div key={block.id} className="h-full w-full">
+            <Block
+              block={block}
+              updateBlockContent={(newContent) => updateBlockContent(block.id, newContent)}
             />
           </div>
         ))}
