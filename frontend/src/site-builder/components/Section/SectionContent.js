@@ -91,6 +91,13 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
     setOverlayMaxRows(Math.max(maxRows, 1));
   };
 
+  const updateBlockContent = (blockId, newContent) => {
+    const updatedBlocks = blocks.map(block =>
+      block.id === blockId ? { ...block, content: newContent } : block
+    );
+    updateBlocks(updatedBlocks);
+  };
+
   return (
     <div className="relative w-full" ref={ref} style={{ minHeight: `${rowHeights[currentBreakpoint]}px` }}>
       {isDragging && !previewMode && width > 0 && (
@@ -126,7 +133,10 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
       >
         {blocks.map((block) => (
           <div key={block.id} className="bg-white shadow-lg rounded-md overflow-hidden">
-            <Block block={block} />
+            <Block 
+              block={block} 
+              updateBlockContent={(newContent) => updateBlockContent(block.id, newContent)} 
+            />
           </div>
         ))}
       </ResponsiveGridLayout>
