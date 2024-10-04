@@ -100,6 +100,18 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
 
   return (
     <div className="relative w-full" ref={ref} style={{ minHeight: `${rowHeights[currentBreakpoint]}px` }}>
+      <style>
+        {`
+          .react-grid-item > .react-resizable-handle {
+            background: none;
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            background-color: #007bff;
+            border: 2px solid white;
+          }
+        `}
+      </style>
       {isDragging && !previewMode && width > 0 && (
         <GridOverlay
           cols={cols[currentBreakpoint]}
@@ -122,6 +134,7 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
         onLayoutChange={handleLayoutChange}
         isDraggable={!previewMode}
         isResizable={!previewMode}
+        resizeHandles={["s", "w", "e", "n", "sw", "se", "nw", "ne"]}
         compactType={null}
         preventCollision
         onDragStart={handleDragStart}
@@ -132,7 +145,10 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
         onResizeStop={handleResizeStop}
       >
         {blocks.map((block) => (
-          <div key={block.id} className="h-full w-full">
+          <div 
+            key={block.id} 
+            className="h-full w-full hover:outline hover:outline-2 hover:outline-blue-500"
+          >
             <Block
               block={block}
               updateBlockContent={(newContent) => updateBlockContent(block.id, newContent)}

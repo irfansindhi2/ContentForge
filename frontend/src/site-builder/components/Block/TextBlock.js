@@ -20,6 +20,7 @@ const TextBlock = ({ content, updateContent }) => {
     editorProps: {
       attributes: {
         class: 'prose max-w-none w-full h-full',
+        style: 'border: none; outline: none;',
       },
     },
   });
