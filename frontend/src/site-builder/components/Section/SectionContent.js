@@ -135,7 +135,7 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
         {blocks.map((block) => (
           <div 
             key={block.id} 
-            className="h-full w-full hover:outline hover:outline-2 hover:outline-blue-500"
+            className={`h-full w-full ${!previewMode ? 'hover:outline hover:outline-2 hover:outline-blue-500' : ''}`}
           >
             <Block
               block={block}
