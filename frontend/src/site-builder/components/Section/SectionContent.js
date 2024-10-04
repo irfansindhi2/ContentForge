@@ -100,18 +100,6 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
 
   return (
     <div className="relative w-full" ref={ref} style={{ minHeight: `${rowHeights[currentBreakpoint]}px` }}>
-      <style>
-        {`
-          .react-grid-item > .react-resizable-handle {
-            background: none;
-            border-radius: 50%;
-            width: 12px;
-            height: 12px;
-            background-color: #007bff;
-            border: 2px solid white;
-          }
-        `}
-      </style>
       {isDragging && !previewMode && width > 0 && (
         <GridOverlay
           cols={cols[currentBreakpoint]}

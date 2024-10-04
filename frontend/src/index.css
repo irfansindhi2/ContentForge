@@ -2,11 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
-.react-resizable-handle {
-    background-image: none;
-  }
+/* Corner handles */
+.react-grid-item>.react-resizable-handle-ne,
+.react-grid-item>.react-resizable-handle-se,
+.react-grid-item>.react-resizable-handle-sw,
+.react-grid-item>.react-resizable-handle-nw,
+.react-grid-item>.react-resizable-handle-n,
+.react-grid-item>.react-resizable-handle-e,
+.react-grid-item>.react-resizable-handle-w,
+.react-grid-item>.react-resizable-handle-s {
+    margin: calc(-0.63rem - 1px);
+    /* Ensures handles stay outside */
+}
 
 .react-grid-item > .react-resizable-handle::after {
-  border: none;
-  content: none;
+    border: none;
+    content: none;
+}
+
+.react-resizable-handle {
+    background-image: none;
+    padding: 0 !important;
+    opacity: 0;
+}
+
+.react-grid-item:hover > .react-resizable-handle {
+    opacity: 1;
+  }
+
+.react-grid-item > .react-resizable-handle::before {
+    content: '';
+    position: absolute;
+    width: 10px;      /* Small visible circle size */
+    height: 10px;
+    background-color: white;  /* White circle */
+    border: 2px solid #3b82f6; /* Tailwind's blue-500 */
+    border-radius: 50%;       /* Make it a circle */
+    top: 50%;         /* Center the circle within the larger handle */
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
