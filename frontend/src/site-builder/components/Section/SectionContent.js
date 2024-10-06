@@ -8,6 +8,7 @@ import { useMeasure } from 'react-use';
 import { mergeSettings } from '../../utils/settingsUtils';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
+import { getBlockConfig } from '../../utils/blockConfig';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -58,7 +59,19 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
 
   const handleLayoutChange = (currentLayout, allLayouts) => {
     if (!previewMode) {
-      const updatedBlocks = updateBlockLayout(blocks, currentLayout);
+      const updatedBlocks = blocks.map(block => {
+        const layoutItem = currentLayout.find(item => item.i === block.id);
+        if (layoutItem) {
+          return {
+            ...block,
+            x: layoutItem.x,
+            y: layoutItem.y,
+            w: layoutItem.w,
+            h: layoutItem.h,
+          };
+        }
+        return block;
+      });
       updateBlocks(updatedBlocks);
     }
   };
@@ -132,17 +145,28 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
         onResize={handleResize}
         onResizeStop={handleResizeStop}
       >
-        {blocks.map((block) => (
-          <div 
-            key={block.id} 
-            className={`h-full w-full ${!previewMode ? 'hover:outline hover:outline-2 hover:outline-blue-500' : ''}`}
-          >
-            <Block
-              block={block}
-              updateBlockContent={(newContent) => updateBlockContent(block.id, newContent)}
-            />
-          </div>
-        ))}
+        {blocks.map((block) => {
+          const config = getBlockConfig(block.type);
+          return (
+            <div 
+              key={block.id} 
+              className={`h-full w-full ${!previewMode ? 'hover:outline hover:outline-2 hover:outline-blue-500' : ''}`}
+              data-grid={{
+                x: Number(block.x) || config.defaultX,
+                y: Number(block.y) || config.defaultY,
+                w: Number(block.w) || config.defaultW,
+                h: Number(block.h) || config.defaultH,
+                minW: config.minW,
+                minH: config.minH,
+              }}
+            >
+              <Block
+                block={block}
+                updateBlockContent={(newContent) => updateBlockContent(block.id, newContent)}
+              />
+            </div>
+          );
+        })}
       </ResponsiveGridLayout>
     </div>
   );

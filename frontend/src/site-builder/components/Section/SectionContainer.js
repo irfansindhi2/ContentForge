@@ -2,6 +2,7 @@ import React, { useContext, useState, useRef } from 'react';
 import SectionContent from './SectionContent';
 import { PreviewModeContext } from '../../PreviewModeContext';
 import { mergeSettings } from '../../utils/settingsUtils';
+import { getBlockConfig } from '../../utils/blockConfig';
 import { Settings, PlusCircle, Copy, Trash2, ArrowUp, ArrowDown, Image, CreditCard } from 'lucide-react';
 
 const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSettings, onDuplicate, onDelete, onMoveUp, onMoveDown, isFirst, isLast}) => {
@@ -12,12 +13,14 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
   const deleteModalRef = useRef(null);
 
   const addBlock = (type = 'text') => {
+    const config = getBlockConfig(type);
     const newBlock = {
       id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       type: type,
       content: type === 'carousel' ? [] : `New ${type} block`,
       x: 0,
-      y: Infinity,
+      w: config.defaultW,
+      h: config.defaultH,
     };
     updateBlocks([...blocks, newBlock]);
   };

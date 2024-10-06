@@ -1,3 +1,5 @@
+import { getBlockConfig } from './blockConfig';
+
 // Generates layouts for all breakpoints
 export const generateResponsiveLayouts = (blocks, cols) => {
   const breakpoints = Object.keys(cols);
@@ -5,18 +7,21 @@ export const generateResponsiveLayouts = (blocks, cols) => {
 
   breakpoints.forEach((breakpoint) => {
     const colCount = cols[breakpoint];
-    layouts[breakpoint] = blocks.map((block, index) => {
-      // Adjust positions and sizes based on the number of columns at this breakpoint
-      let w = Math.min(block.colSpan || 2, colCount);
-      let x = (block.x || 0) % colCount;
-      let y = block.y || 0;
+    layouts[breakpoint] = blocks.map((block) => {
+      const config = getBlockConfig(block.type);
+      let w = Math.min(Number(block.w) || config.defaultW, colCount);
+      let x = Number(block.x) || config.defaultX;
+      let y = Number(block.y) || config.defaultY;
+      let h = Number(block.h) || config.defaultH;
 
       return {
         i: block.id,
-        x,
-        y,
-        w,
-        h: block.rowSpan || 2,
+        x: x % colCount, // Ensure x is within the column range
+        y: y,
+        w: w,
+        h: h,
+        minW: config.minW,
+        minH: config.minH,
       };
     });
   });
