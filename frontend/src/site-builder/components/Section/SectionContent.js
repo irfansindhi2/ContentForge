@@ -3,7 +3,7 @@ import { Responsive, WidthProvider } from 'react-grid-layout';
 import { PreviewModeContext } from '../../PreviewModeContext';
 import Block from '../Block/Block';
 import GridOverlay from './GridOverlay';
-import { generateResponsiveLayouts, updateBlockLayout } from '../../utils/layoutUtils';
+import { generateResponsiveLayouts } from '../../utils/layoutUtils';
 import { useMeasure } from 'react-use';
 import { mergeSettings } from '../../utils/settingsUtils';
 import 'react-grid-layout/css/styles.css';
@@ -19,6 +19,7 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [currentBreakpoint, setCurrentBreakpoint] = useState('lg');
   const [ref, { width }] = useMeasure();
+  const [openToolbarId, setOpenToolbarId] = useState(null);
 
   const breakpoints = { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 };
   const cols = { lg: 24, md: 24, sm: 8, xs: 8, xxs: 3 };
@@ -111,6 +112,27 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
     updateBlocks(updatedBlocks);
   };
 
+  const handleBlockClick = (blockId) => {
+    setOpenToolbarId(prevId => prevId === blockId ? null : blockId);
+  };
+
+  const handleOutsideClick = () => {
+    setOpenToolbarId(null);
+  };
+
+  const handleDuplicateBlock = (blockToDuplicate) => {
+    const newBlock = {
+      ...blockToDuplicate,
+      id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    };
+    updateBlocks([...blocks, newBlock]);
+  };
+
+  const handleDeleteBlock = (blockId) => {
+    const updatedBlocks = blocks.filter(block => block.id !== blockId);
+    updateBlocks(updatedBlocks);
+  };
+
   return (
     <div className="relative w-full" ref={ref} style={{ minHeight: `${rowHeights[currentBreakpoint]}px` }}>
       {isDragging && !previewMode && width > 0 && (
@@ -148,8 +170,8 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
         {blocks.map((block) => {
           const config = getBlockConfig(block.type);
           return (
-            <div 
-              key={block.id} 
+            <div
+              key={block.id}
               className={`h-full w-full ${!previewMode ? 'hover:outline hover:outline-2 hover:outline-blue-500' : ''}`}
               data-grid={{
                 x: Number(block.x) || config.defaultX,
@@ -163,6 +185,10 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
               <Block
                 block={block}
                 updateBlockContent={(newContent) => updateBlockContent(block.id, newContent)}
+                onDuplicate={handleDuplicateBlock}
+                onDelete={handleDeleteBlock}
+                isToolbarOpen={openToolbarId === block.id}
+                onBlockClick={() => handleBlockClick(block.id)}
               />
             </div>
           );

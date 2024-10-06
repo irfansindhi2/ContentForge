@@ -28,18 +28,3 @@ export const generateResponsiveLayouts = (blocks, cols) => {
 
   return layouts;
 };
-
-// Updates block positions and sizes based on the new layout
-export const updateBlockLayout = (blocks, newLayout) =>
-  blocks.map((block) => {
-    const layoutItem = newLayout.find((item) => item.i === block.id);
-    return layoutItem
-      ? {
-          ...block,
-          x: layoutItem.x,
-          y: layoutItem.y,
-          colSpan: layoutItem.w,
-          rowSpan: layoutItem.h,
-        }
-      : block;
-  });
