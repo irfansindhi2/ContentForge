@@ -6,6 +6,7 @@ import defaultSettings from './defaultSettings';
 
 const SiteBuilder = () => {
   const [sections, setSections] = useState([]);
+  const [openToolbarId, setOpenToolbarId] = useState(null);
   const { setPreviewMode } = useContext(PreviewModeContext);
   const navigate = useNavigate();
   const newSectionRef = useRef(null);
@@ -30,6 +31,11 @@ const SiteBuilder = () => {
       x: 0,
       y: 0,
     };
+  };
+
+  // To track opening and closing of block toolbar
+  const handleBlockClick = (blockId) => {
+    setOpenToolbarId(prevId => prevId === blockId ? null : blockId);
   };
 
   const addSection = () => {
@@ -143,6 +149,8 @@ const SiteBuilder = () => {
             isFirst={index === 0}
             isLast={index === sections.length - 1}
             isDeletable={sections.length > 1}
+            openToolbarId={openToolbarId}
+            onBlockClick={handleBlockClick}
           />
         ))}
       </div>

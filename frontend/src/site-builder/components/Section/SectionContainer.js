@@ -6,7 +6,22 @@ import { mergeSettings } from '../../utils/settingsUtils';
 import { getBlockConfig } from '../../utils/blockConfig';
 import { Z_INDEXES } from '../../utils/zIndexes';
 
-const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSettings, onDuplicate, onDelete, onMoveUp, onMoveDown, isFirst, isLast, isDeletable }) => {
+const SectionContainer = ({ 
+  sectionId, 
+  blocks, 
+  updateBlocks, 
+  settings, 
+  updateSettings, 
+  onDuplicate, 
+  onDelete, 
+  onMoveUp, 
+  onMoveDown, 
+  isFirst, 
+  isLast, 
+  isDeletable,
+  openToolbarId,
+  onBlockClick
+}) => {
   const { previewMode } = useContext(PreviewModeContext);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const deleteModalRef = useRef(null);
@@ -68,7 +83,13 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
         />
       )}
       <div className="relative">
-        <SectionContent blocks={blocks} updateBlocks={updateBlocks} settings={settings} />
+      <SectionContent 
+          blocks={blocks} 
+          updateBlocks={updateBlocks} 
+          settings={settings} 
+          openToolbarId={openToolbarId}
+          onBlockClick={onBlockClick}
+        />
       </div>
 
       {/* Daisy UI Modal for delete confirmation */}

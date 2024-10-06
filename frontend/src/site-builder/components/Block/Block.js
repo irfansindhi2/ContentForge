@@ -17,8 +17,8 @@ const Block = React.memo(({
 
   const handleClick = useCallback((e) => {
     e.stopPropagation();
-    onBlockClick();
-  }, [onBlockClick]);
+    onBlockClick(block.id);
+  }, [onBlockClick, block.id]);
 
   const handleDuplicate = useCallback(() => {
     onDuplicate(block);

@@ -10,7 +10,7 @@ import { useDragResize } from '../../hooks/useDragResize';
 import { useBlockManager } from '../../hooks/useBlockManager';
 import ResponsiveGrid from './ResponsiveGrid';
 
-const SectionContent = ({ blocks, updateBlocks, settings }) => {
+const SectionContent = ({ blocks, updateBlocks, settings, openToolbarId, onBlockClick }) => {
   const mergedSettings = mergeSettings(settings);
   const { previewMode } = useContext(PreviewModeContext);
   const [ref, { width }] = useMeasure();
@@ -31,7 +31,7 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
 
   const { currentBreakpoint, setCurrentBreakpoint, layouts, maxRows } = useLayoutManager(blocks, cols);
   const { isDragging, overlayMaxRows, currentPosition, handleDragStart, handleDragStop, handleDrag } = useDragResize(maxRows);
-  const { openToolbarId, updateBlockContent, handleBlockClick, handleDuplicateBlock, handleDeleteBlock } = useBlockManager(blocks, updateBlocks);
+  const { updateBlockContent, handleDuplicateBlock, handleDeleteBlock } = useBlockManager(blocks, updateBlocks);
 
   const handleLayoutChange = (currentLayout, allLayouts) => {
     if (!previewMode) {
@@ -86,7 +86,7 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
         handleDuplicateBlock={handleDuplicateBlock}
         handleDeleteBlock={handleDeleteBlock}
         openToolbarId={openToolbarId}
-        onBlockClick={handleBlockClick}
+        onBlockClick={onBlockClick}
       />
     </div>
   );
