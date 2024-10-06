@@ -1,4 +1,5 @@
 import React from 'react';
+import { Z_INDEXES } from '../../utils/zIndexes';
 
 const GridOverlay = ({
   cols,
@@ -18,7 +19,7 @@ const GridOverlay = ({
     2 * containerPadding[1];
 
   return (
-    <div className="absolute inset-0 pointer-events-none z-10">
+    <div className="absolute inset-0 pointer-events-none" style={{ zIndex: Z_INDEXES.GRID_OVERLAY }}>
       <div
         className="w-full relative"
         style={{

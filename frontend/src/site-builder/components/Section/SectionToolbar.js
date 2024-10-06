@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, X, Type, Image, CreditCard, Settings, Copy, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
+import { Z_INDEXES } from '../../utils/zIndexes';
 
 const BlockTypes = [
   { type: 'text', Icon: Type, label: 'Text' },
@@ -46,7 +47,7 @@ const SectionToolbar = ({
   };
 
   return (
-    <div className="absolute top-2 left-2 right-2 z-30 flex justify-between">
+    <div className="absolute top-2 left-2 right-2 flex justify-between" style={{ zIndex: Z_INDEXES.SECTION_TOOLBAR }}>
       <button 
         className="btn btn-circle btn-primary" 
         onClick={toggleDrawer}
@@ -79,7 +80,7 @@ const SectionToolbar = ({
       </div>
 
       {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50" style={{ zIndex: Z_INDEXES.ADD_BLOCK_DRAWER }}>
           <div className="drawer drawer-end">
             <input id="block-drawer" type="checkbox" className="drawer-toggle" checked={isOpen} readOnly />
             <div className="drawer-side">
@@ -114,7 +115,7 @@ const SectionToolbar = ({
       )}
 
       {showSettings && (
-        <div className="card bg-base-100 shadow-xl absolute top-14 right-2 z-40 p-4">
+        <div className="card bg-base-100 shadow-xl absolute top-14 right-2 p-4" style={{ zIndex: Z_INDEXES.SETTINGS_MODAL }}>
           <h2 className="text-lg font-bold mb-2">Cell Spacing</h2>
           <div className="join">
             {marginOptions.map((option) => (

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Copy, Trash2 } from 'lucide-react';
+import { Z_INDEXES } from '../../utils/zIndexes';
 
 const BlockToolbar = ({ onDuplicate, onDelete, visible }) => {
   if (!visible) return null;
@@ -10,8 +11,9 @@ const BlockToolbar = ({ onDuplicate, onDelete, visible }) => {
 
   return (
     <div 
-      className="absolute -top-2 left-0 transform -translate-y-full flex space-x-2 bg-base-100 shadow-lg rounded-lg p-2 z-50"
+      className="absolute -top-2 left-0 transform -translate-y-full flex space-x-2 bg-base-100 shadow-lg rounded-lg p-2"
       onClick={handleToolbarClick}
+      style={{ zIndex: Z_INDEXES.BLOCK_TOOLBAR }}
     >
       <button
         className="btn btn-sm btn-ghost"

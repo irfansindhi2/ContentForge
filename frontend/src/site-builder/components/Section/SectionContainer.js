@@ -4,6 +4,7 @@ import SectionToolbar from './SectionToolbar';
 import { PreviewModeContext } from '../../PreviewModeContext';
 import { mergeSettings } from '../../utils/settingsUtils';
 import { getBlockConfig } from '../../utils/blockConfig';
+import { Z_INDEXES } from '../../utils/zIndexes';
 
 const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSettings, onDuplicate, onDelete, onMoveUp, onMoveDown, isFirst, isLast, isDeletable }) => {
   const { previewMode } = useContext(PreviewModeContext);
@@ -67,7 +68,7 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
       </div>
 
       {/* Daisy UI Modal for delete confirmation */}
-      <dialog ref={deleteModalRef} className="modal modal-bottom sm:modal-middle">
+      <dialog ref={deleteModalRef} className="modal modal-bottom sm:modal-middle" style={{ zIndex: Z_INDEXES.DELETE_MODAL }}>
         <form method="dialog" className="modal-box">
           <h3 className="font-bold text-lg">Confirm Deletion</h3>
           <p className="py-4">Are you sure you want to delete this section? This action cannot be undone.</p>

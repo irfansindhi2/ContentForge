@@ -1,4 +1,5 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useContext } from 'react';
+import { PreviewModeContext } from '../../PreviewModeContext';
 import CarouselBlock from './CarouselBlock';
 import CardBlock from './CardBlock';
 import TextBlock from './TextBlock';
@@ -12,6 +13,8 @@ const Block = React.memo(({
   isToolbarOpen, 
   onBlockClick 
 }) => {
+  const { previewMode } = useContext(PreviewModeContext);
+
   const handleClick = useCallback((e) => {
     e.stopPropagation();
     onBlockClick();
@@ -31,7 +34,7 @@ const Block = React.memo(({
       onClick={handleClick}
     >
       <BlockToolbar
-        visible={isToolbarOpen}
+        visible={isToolbarOpen && !previewMode}
         onDuplicate={handleDuplicate}
         onDelete={handleDelete}
       />
