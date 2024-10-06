@@ -49,7 +49,7 @@ const SectionToolbar = ({
   return (
     <div className="absolute top-2 left-2 right-2 flex justify-between" style={{ zIndex: Z_INDEXES.SECTION_TOOLBAR }}>
       <button 
-        className="btn btn-circle btn-primary" 
+        className="btn btn-circle" 
         onClick={toggleDrawer}
       >
         <Plus className="w-5 h-5" />
