@@ -6,9 +6,7 @@ import { mergeSettings } from '../../utils/settingsUtils';
 import { getBlockConfig } from '../../utils/blockConfig';
 
 const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSettings, onDuplicate, onDelete, onMoveUp, onMoveDown, isFirst, isLast, isDeletable }) => {
-  const mergedSettings = mergeSettings(settings);
   const { previewMode } = useContext(PreviewModeContext);
-  const [showSettings, setShowSettings] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const deleteModalRef = useRef(null);
 
@@ -23,20 +21,6 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
       h: config.defaultH,
     };
     updateBlocks([...blocks, newBlock]);
-  };
-
-  const toggleSettings = () => {
-    setShowSettings(!showSettings);
-  };
-
-  const handleSettingsChange = (value) => {
-    updateSettings({ ...mergedSettings, margins: value });
-  };
-
-  const handleDuplicate = () => {
-    if (onDuplicate) {
-      onDuplicate(sectionId, blocks, settings);
-    }
   };
 
   const handleDeleteClick = () => {
@@ -55,14 +39,9 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
     setShowDeleteModal(false);
   };
 
-  const marginOptions = [
-    { value: 'extra-large', label: 'XL' },
-    { value: 'large', label: 'L' },
-    { value: 'medium', label: 'M' },
-    { value: 'small', label: 'S' },
-    { value: 'extra-small', label: 'XS' },
-    { value: 'none', label: 'None' },
-  ];
+  const handleSettingsChange = (newSettings) => {
+    updateSettings(newSettings);
+  };
 
   return (
     <div
@@ -74,34 +53,17 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
           addBlock={addBlock}
           onMoveUp={onMoveUp}
           onMoveDown={onMoveDown}
-          toggleSettings={toggleSettings}
-          onDuplicate={handleDuplicate}
+          onDuplicate={onDuplicate}
           onDelete={handleDeleteClick}
           isFirst={isFirst}
           isLast={isLast}
           isDeletable={isDeletable}
+          settings={settings}
+          updateSettings={handleSettingsChange}
         />
       )}
-      {showSettings && (
-        <div className="card bg-base-100 shadow-xl absolute top-14 right-2 z-20 p-4">
-          <h2 className="text-lg font-bold mb-2">Cell Spacing</h2>
-          <div className="join">
-            {marginOptions.map((option) => (
-              <input
-                key={option.value}
-                type="radio"
-                name="margins"
-                aria-label={option.label}
-                className="join-item btn btn-sm"
-                checked={mergedSettings.margins === option.value}
-                onChange={() => handleSettingsChange(option.value)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
       <div className="relative">
-        <SectionContent blocks={blocks} updateBlocks={updateBlocks} settings={mergedSettings} />
+        <SectionContent blocks={blocks} updateBlocks={updateBlocks} settings={settings} />
       </div>
 
       {/* Daisy UI Modal for delete confirmation */}
