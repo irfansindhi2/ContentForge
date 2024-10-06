@@ -47,15 +47,15 @@ const SectionToolbar = ({
   };
 
   return (
-    <div className="absolute top-2 left-2 right-2 flex justify-between" style={{ zIndex: Z_INDEXES.SECTION_TOOLBAR }}>
+    <div className="absolute top-2 left-2 right-2 flex justify-between pointer-events-none" style={{ zIndex: Z_INDEXES.SECTION_TOOLBAR }}>
       <button 
-        className="btn btn-circle" 
+        className="btn btn-circle pointer-events-auto" 
         onClick={toggleDrawer}
       >
         <Plus className="w-5 h-5" />
       </button>
 
-      <div className="flex space-x-2">
+      <div className="flex space-x-2 pointer-events-auto">
         {!isFirst && (
           <button className="btn btn-circle" onClick={onMoveUp}>
             <ArrowUp className="w-5 h-5" />
