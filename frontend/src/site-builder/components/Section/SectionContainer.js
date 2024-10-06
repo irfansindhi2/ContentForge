@@ -44,17 +44,21 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
     updateSettings(newSettings);
   };
 
+  const handleDuplicate = () => {
+    onDuplicate();
+  };
+
   return (
     <div
       id={sectionId}
-      className={`relative w-full ${!previewMode ? 'hover:outline hover:outline-2 hover:outline-blue-500 hover:outline-offset-[-2px] my-2' : ''}`}
+      className={`relative w-full ${!previewMode ? 'hover:outline hover:outline-2 hover:outline-blue-500 hover:outline-offset-[-2px] p-2 my-2' : ''}`}
     >
       {!previewMode && (
         <SectionToolbar
           addBlock={addBlock}
           onMoveUp={onMoveUp}
           onMoveDown={onMoveDown}
-          onDuplicate={onDuplicate}
+          onDuplicate={handleDuplicate}
           onDelete={handleDeleteClick}
           isFirst={isFirst}
           isLast={isLast}

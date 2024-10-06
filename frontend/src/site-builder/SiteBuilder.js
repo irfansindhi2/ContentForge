@@ -26,7 +26,7 @@ const SiteBuilder = () => {
     return {
       id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       type,
-      content: blockContent,
+      content,
       x: 0,
       y: 0,
     };
@@ -67,17 +67,20 @@ const SiteBuilder = () => {
     );
   };
 
-  const duplicateSection = (sectionId, blocks, settings) => {
-    const newSection = {
-      id: `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      blocks: blocks.map(block => ({
-        ...block,
-        id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-      })),
-      settings: { ...settings }
-    };
-    setSections(prevSections => [...prevSections, newSection]);
-    newSectionRef.current = newSection.id;
+  const duplicateSection = (sectionId) => {
+    const sectionToDuplicate = sections.find(section => section.id === sectionId);
+    if (sectionToDuplicate) {
+      const newSection = {
+        id: `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        blocks: sectionToDuplicate.blocks.map(block => ({
+          ...block,
+          id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+        })),
+        settings: { ...sectionToDuplicate.settings }
+      };
+      setSections(prevSections => [...prevSections, newSection]);
+      newSectionRef.current = newSection.id;
+    }
   };
 
   const deleteSection = (sectionId) => {
@@ -133,7 +136,7 @@ const SiteBuilder = () => {
             addBlock={(blockType) => addBlockToSection(section.id, blockType)}
             settings={section.settings}
             updateSettings={(newSettings) => updateSettingsInSection(section.id, newSettings)}
-            onDuplicate={duplicateSection}
+            onDuplicate={() => duplicateSection(section.id)}
             onDelete={() => deleteSection(section.id)}
             onMoveUp={() => moveSection(section.id, 'up')}
             onMoveDown={() => moveSection(section.id, 'down')}
