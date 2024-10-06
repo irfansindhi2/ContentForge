@@ -10,6 +10,13 @@ const SiteBuilder = () => {
   const navigate = useNavigate();
   const newSectionRef = useRef(null);
 
+  useEffect(() => {
+    // Automatically add an empty section if there are no sections
+    if (sections.length === 0) {
+      addSection();
+    }
+  }, []);
+
   const handlePreview = () => {
     setPreviewMode(true);
     navigate('/preview', { state: { sections } });
@@ -132,6 +139,7 @@ const SiteBuilder = () => {
             onMoveDown={() => moveSection(section.id, 'down')}
             isFirst={index === 0}
             isLast={index === sections.length - 1}
+            isDeletable={sections.length > 1}
           />
         ))}
       </div>

@@ -5,7 +5,7 @@ import { mergeSettings } from '../../utils/settingsUtils';
 import { getBlockConfig } from '../../utils/blockConfig';
 import { Settings, PlusCircle, Copy, Trash2, ArrowUp, ArrowDown, Image, CreditCard } from 'lucide-react';
 
-const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSettings, onDuplicate, onDelete, onMoveUp, onMoveDown, isFirst, isLast}) => {
+const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSettings, onDuplicate, onDelete, onMoveUp, onMoveDown, isFirst, isLast, isDeletable }) => {
   const mergedSettings = mergeSettings(settings);
   const { previewMode } = useContext(PreviewModeContext);
   const [showSettings, setShowSettings] = useState(false);
@@ -65,27 +65,27 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
   ];
 
   return (
-    <div 
-      id={sectionId} 
+    <div
+      id={sectionId}
       className={`relative w-full ${!previewMode ? 'hover:outline hover:outline-2 hover:outline-blue-500 hover:outline-offset-[-2px] p-2 my-2' : ''}`}
     >
       {!previewMode && (
         <>
           <div className="absolute top-2 left-2 z-10 flex space-x-2">
-            <button 
-              className="btn btn-circle" 
+            <button
+              className="btn btn-circle"
               onClick={() => addBlock('text')}
             >
               <PlusCircle className="w-5 h-5" />
             </button>
-            <button 
-              className="btn btn-circle" 
+            <button
+              className="btn btn-circle"
               onClick={() => addBlock('carousel')}
             >
               <Image className="w-5 h-5" />
             </button>
-            <button 
-              className="btn btn-circle" 
+            <button
+              className="btn btn-circle"
               onClick={() => addBlock('card')}
             >
               <CreditCard className="w-5 h-5" />
@@ -93,39 +93,41 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
           </div>
           <div className="absolute top-2 right-2 z-10 flex space-x-2">
             {!isFirst && (
-              <button 
-                className="btn btn-circle" 
+              <button
+                className="btn btn-circle"
                 onClick={onMoveUp}
               >
                 <ArrowUp className="w-5 h-5" />
               </button>
             )}
             {!isLast && (
-              <button 
-                className="btn btn-circle" 
+              <button
+                className="btn btn-circle"
                 onClick={onMoveDown}
               >
                 <ArrowDown className="w-5 h-5" />
               </button>
             )}
-            <button 
-              className="btn btn-circle" 
+            <button
+              className="btn btn-circle"
               onClick={toggleSettings}
             >
               <Settings className="w-5 h-5" />
             </button>
-            <button 
-              className="btn btn-circle" 
+            <button
+              className="btn btn-circle"
               onClick={handleDuplicate}
             >
               <Copy className="w-5 h-5" />
             </button>
-            <button 
-              className="btn btn-circle btn-error" 
-              onClick={handleDeleteClick}
-            >
-              <Trash2 className="w-5 h-5" />
-            </button>
+            {isDeletable && (
+              <button
+                className="btn btn-circle btn-error"
+                onClick={handleDeleteClick}
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            )}
           </div>
         </>
       )}
@@ -134,10 +136,10 @@ const SectionContainer = ({ sectionId, blocks, updateBlocks, settings, updateSet
           <h2 className="text-lg font-bold mb-2">Cell Spacing</h2>
           <div className="join">
             {marginOptions.map((option) => (
-              <input 
+              <input
                 key={option.value}
-                type="radio" 
-                name="margins" 
+                type="radio"
+                name="margins"
                 aria-label={option.label}
                 className="join-item btn btn-sm"
                 checked={mergedSettings.margins === option.value}
