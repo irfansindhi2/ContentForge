@@ -8,6 +8,7 @@ const GridOverlay = ({
   containerWidth,
   rowHeight,
   maxRows,
+  currentPosition,
 }) => {
   const validMaxRows =
     Number.isFinite(maxRows) && maxRows > 0 ? Math.floor(maxRows) : 1;
@@ -41,7 +42,13 @@ const GridOverlay = ({
               {Array.from({ length: cols }).map((_, colIndex) => (
                 <div
                   key={`cell-${rowIndex}-${colIndex}`}
-                  className="bg-blue-100 bg-opacity-60 border border-blue-300 border-opacity-20"
+                  className={`bg-blue-100 bg-opacity-60 border border-blue-300 border-opacity-20 ${
+                    currentPosition &&
+                    currentPosition.x === colIndex &&
+                    currentPosition.y === rowIndex
+                      ? 'bg-blue-300 bg-opacity-80'
+                      : ''
+                  }`}
                   style={{
                     width: `${columnWidth}px`,
                     height: `${rowHeight}px`,

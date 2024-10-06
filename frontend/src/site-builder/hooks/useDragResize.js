@@ -1,25 +1,31 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 export const useDragResize = (initialMaxRows) => {
   const [isDragging, setIsDragging] = useState(false);
   const [overlayMaxRows, setOverlayMaxRows] = useState(initialMaxRows);
+  const [currentPosition, setCurrentPosition] = useState(null);
 
-  const handleDragStart = () => setIsDragging(true);
-  const handleDragStop = () => {
+  const handleDragStart = useCallback(() => {
+    setIsDragging(true);
+    setOverlayMaxRows(initialMaxRows);
+  }, [initialMaxRows]);
+
+  const handleDragStop = useCallback(() => {
     setIsDragging(false);
     setOverlayMaxRows(initialMaxRows);
-  };
+    setCurrentPosition(null);
+  }, [initialMaxRows]);
 
-  const handleDrag = (layout, oldItem, newItem, placeholder) => {
+  const handleDrag = useCallback((layout, oldItem, newItem, placeholder) => {
     const totalRows = Math.max(placeholder.y + placeholder.h, 1);
-    if (totalRows !== overlayMaxRows) {
-      setOverlayMaxRows(totalRows);
-    }
-  };
+    setOverlayMaxRows(totalRows);
+    setCurrentPosition({ x: newItem.x, y: newItem.y });
+  }, []);
 
   return {
     isDragging,
     overlayMaxRows,
+    currentPosition,
     handleDragStart,
     handleDragStop,
     handleDrag,

@@ -30,7 +30,7 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
   const containerPadding = [0, 0];
 
   const { currentBreakpoint, setCurrentBreakpoint, layouts, maxRows } = useLayoutManager(blocks, cols);
-  const { isDragging, overlayMaxRows, handleDragStart, handleDragStop, handleDrag } = useDragResize(maxRows);
+  const { isDragging, overlayMaxRows, currentPosition, handleDragStart, handleDragStop, handleDrag } = useDragResize(maxRows);
   const { openToolbarId, updateBlockContent, handleBlockClick, handleDuplicateBlock, handleDeleteBlock } = useBlockManager(blocks, updateBlocks);
 
   const handleLayoutChange = (currentLayout, allLayouts) => {
@@ -62,6 +62,7 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
           containerWidth={width}
           rowHeight={rowHeights[currentBreakpoint]}
           maxRows={Math.max(overlayMaxRows, 1)}
+          currentPosition={currentPosition}
         />
       )}
       <ResponsiveGrid
