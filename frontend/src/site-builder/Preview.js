@@ -32,6 +32,10 @@ const Preview = () => {
     settings: section.settings || defaultSettings, // Provide default settings
   }));
 
+  const handleBlockClick = () => {
+    // Do nothing in preview mode
+  };
+
   return (
     <div>
       {sectionsWithSettings.map((section) => (
@@ -41,6 +45,8 @@ const Preview = () => {
           blocks={section.blocks}
           settings={section.settings}
           updateBlocks={() => {}} // No updates in preview mode
+          onBlockClick={handleBlockClick}
+          openToolbarId={null}
         />
       ))}
     </div>
