@@ -1,25 +1,19 @@
-import React, { useContext, useState, useMemo, useRef, useEffect } from 'react';
-import { Responsive, WidthProvider } from 'react-grid-layout';
+import React, { useContext } from 'react';
 import { PreviewModeContext } from '../../PreviewModeContext';
-import Block from '../Block/Block';
 import GridOverlay from './GridOverlay';
-import { generateResponsiveLayouts } from '../../utils/layoutUtils';
 import { useMeasure } from 'react-use';
 import { mergeSettings } from '../../utils/settingsUtils';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
-import { getBlockConfig } from '../../utils/blockConfig';
-
-const ResponsiveGridLayout = WidthProvider(Responsive);
+import { useLayoutManager } from '../../hooks/useLayoutManager';
+import { useDragResize } from '../../hooks/useDragResize';
+import { useBlockManager } from '../../hooks/useBlockManager';
+import ResponsiveGrid from './ResponsiveGrid';
 
 const SectionContent = ({ blocks, updateBlocks, settings }) => {
   const mergedSettings = mergeSettings(settings);
-
   const { previewMode } = useContext(PreviewModeContext);
-  const [isDragging, setIsDragging] = useState(false);
-  const [currentBreakpoint, setCurrentBreakpoint] = useState('lg');
   const [ref, { width }] = useMeasure();
-  const [openToolbarId, setOpenToolbarId] = useState(null);
 
   const breakpoints = { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 };
   const cols = { lg: 24, md: 24, sm: 8, xs: 8, xxs: 3 };
@@ -35,28 +29,9 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
   const margins = marginSizes[mergedSettings.margins];
   const containerPadding = [0, 0];
 
-  const layouts = useMemo(() => generateResponsiveLayouts(blocks, cols), [blocks, cols]);
-
-  const maxRows = useMemo(() => {
-    if (!layouts[currentBreakpoint] || layouts[currentBreakpoint].length === 0) {
-      return 1;
-    }
-    const max = layouts[currentBreakpoint].reduce((max, item) => {
-      const total = (item.y || 0) + (item.h || 0);
-      return Math.max(max, total);
-    }, 0);
-    return Math.max(Math.floor(max), 1);
-  }, [layouts, currentBreakpoint]);
-
-  const [overlayMaxRows, setOverlayMaxRows] = useState(maxRows);
-
-  useEffect(() => {
-    const minHeight = rowHeights[currentBreakpoint];
-    const containerElement = ref.current;
-    if (containerElement) {
-      containerElement.style.minHeight = `${minHeight}px`;
-    }
-  }, [currentBreakpoint, rowHeights, ref]);
+  const { currentBreakpoint, setCurrentBreakpoint, layouts, maxRows } = useLayoutManager(blocks, cols);
+  const { isDragging, overlayMaxRows, handleDragStart, handleDragStop, handleDrag } = useDragResize(maxRows);
+  const { openToolbarId, updateBlockContent, handleBlockClick, handleDuplicateBlock, handleDeleteBlock } = useBlockManager(blocks, updateBlocks);
 
   const handleLayoutChange = (currentLayout, allLayouts) => {
     if (!previewMode) {
@@ -77,62 +52,6 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
     }
   };
 
-  const handleDrag = (layout, oldItem, newItem, placeholder) => {
-    const totalRows = Math.max(placeholder.y + placeholder.h, 1);
-    if (totalRows !== overlayMaxRows) {
-      setOverlayMaxRows(totalRows);
-    }
-  };
-
-  const handleDragStart = () => {
-    setIsDragging(true);
-  };
-
-  const handleDragStop = () => {
-    setIsDragging(false);
-    setOverlayMaxRows(Math.max(maxRows, 1));
-  };
-
-  const handleResize = (layout, oldItem, newItem, placeholder) => {
-    const totalRows = Math.max(placeholder.y + placeholder.h, 1);
-    if (totalRows !== overlayMaxRows) {
-      setOverlayMaxRows(totalRows);
-    }
-  };
-
-  const handleResizeStop = () => {
-    setIsDragging(false);
-    setOverlayMaxRows(Math.max(maxRows, 1));
-  };
-
-  const updateBlockContent = (blockId, newContent) => {
-    const updatedBlocks = blocks.map(block =>
-      block.id === blockId ? { ...block, content: newContent } : block
-    );
-    updateBlocks(updatedBlocks);
-  };
-
-  const handleBlockClick = (blockId) => {
-    setOpenToolbarId(prevId => prevId === blockId ? null : blockId);
-  };
-
-  const handleOutsideClick = () => {
-    setOpenToolbarId(null);
-  };
-
-  const handleDuplicateBlock = (blockToDuplicate) => {
-    const newBlock = {
-      ...blockToDuplicate,
-      id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    };
-    updateBlocks([...blocks, newBlock]);
-  };
-
-  const handleDeleteBlock = (blockId) => {
-    const updatedBlocks = blocks.filter(block => block.id !== blockId);
-    updateBlocks(updatedBlocks);
-  };
-
   return (
     <div className="relative w-full" ref={ref} style={{ minHeight: `${rowHeights[currentBreakpoint]}px` }}>
       {isDragging && !previewMode && width > 0 && (
@@ -145,55 +64,29 @@ const SectionContent = ({ blocks, updateBlocks, settings }) => {
           maxRows={Math.max(overlayMaxRows, 1)}
         />
       )}
-      <ResponsiveGridLayout
-        className="layout"
+      <ResponsiveGrid
+        blocks={blocks}
         layouts={layouts}
         breakpoints={breakpoints}
         cols={cols}
-        rowHeight={rowHeights[currentBreakpoint]}
-        margin={margins[currentBreakpoint]}
+        rowHeights={rowHeights}
+        margins={margins}
         containerPadding={containerPadding}
-        onBreakpointChange={(breakpoint) => setCurrentBreakpoint(breakpoint)}
+        currentBreakpoint={currentBreakpoint}
+        previewMode={previewMode}
         onLayoutChange={handleLayoutChange}
-        isDraggable={!previewMode}
-        isResizable={!previewMode}
-        resizeHandles={["s", "w", "e", "n", "sw", "se", "nw", "ne"]}
-        compactType={null}
-        preventCollision
+        onBreakpointChange={setCurrentBreakpoint}
         onDragStart={handleDragStart}
         onDrag={handleDrag}
         onDragStop={handleDragStop}
-        onResizeStart={handleDragStart}
-        onResize={handleResize}
-        onResizeStop={handleResizeStop}
-      >
-        {blocks.map((block) => {
-          const config = getBlockConfig(block.type);
-          return (
-            <div
-              key={block.id}
-              className={`h-full w-full ${!previewMode ? 'hover:outline hover:outline-2 hover:outline-blue-500' : ''}`}
-              data-grid={{
-                x: Number(block.x) || config.defaultX,
-                y: Number(block.y) || config.defaultY,
-                w: Number(block.w) || config.defaultW,
-                h: Number(block.h) || config.defaultH,
-                minW: config.minW,
-                minH: config.minH,
-              }}
-            >
-              <Block
-                block={block}
-                updateBlockContent={(newContent) => updateBlockContent(block.id, newContent)}
-                onDuplicate={handleDuplicateBlock}
-                onDelete={handleDeleteBlock}
-                isToolbarOpen={openToolbarId === block.id}
-                onBlockClick={() => handleBlockClick(block.id)}
-              />
-            </div>
-          );
-        })}
-      </ResponsiveGridLayout>
+        onResize={handleDrag}
+        onResizeStop={handleDragStop}
+        updateBlockContent={updateBlockContent}
+        handleDuplicateBlock={handleDuplicateBlock}
+        handleDeleteBlock={handleDeleteBlock}
+        openToolbarId={openToolbarId}
+        onBlockClick={handleBlockClick}
+      />
     </div>
   );
 };
