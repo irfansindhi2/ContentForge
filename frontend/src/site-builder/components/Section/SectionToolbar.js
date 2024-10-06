@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ReactDOM from 'react-dom';
 import { Plus, X, Type, Image, CreditCard, Settings, Copy, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 import { Z_INDEXES } from '../../utils/zIndexes';
 
@@ -27,7 +28,8 @@ const SectionToolbar = ({
   isLast, 
   isDeletable,
   settings,
-  updateSettings
+  updateSettings,
+  sectionId
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -47,44 +49,46 @@ const SectionToolbar = ({
   };
 
   return (
-    <div className="absolute top-2 left-2 right-2 flex justify-between pointer-events-none" style={{ zIndex: Z_INDEXES.SECTION_TOOLBAR }}>
-      <button 
-        className="btn btn-circle pointer-events-auto" 
-        onClick={toggleDrawer}
-      >
-        <Plus className="w-5 h-5" />
-      </button>
+    <>
+      <div className="absolute top-2 left-2 right-2 flex justify-between pointer-events-none" style={{ zIndex: Z_INDEXES.SECTION_TOOLBAR }}>
+        <button 
+          className="btn btn-circle pointer-events-auto" 
+          onClick={toggleDrawer}
+        >
+          <Plus className="w-5 h-5" />
+        </button>
 
-      <div className="flex space-x-2 pointer-events-auto">
-        {!isFirst && (
-          <button className="btn btn-circle" onClick={onMoveUp}>
-            <ArrowUp className="w-5 h-5" />
+        <div className="flex space-x-2 pointer-events-auto">
+          {!isFirst && (
+            <button className="btn btn-circle" onClick={onMoveUp}>
+              <ArrowUp className="w-5 h-5" />
+            </button>
+          )}
+          {!isLast && (
+            <button className="btn btn-circle" onClick={onMoveDown}>
+              <ArrowDown className="w-5 h-5" />
+            </button>
+          )}
+          <button className="btn btn-circle" onClick={toggleSettings}>
+            <Settings className="w-5 h-5" />
           </button>
-        )}
-        {!isLast && (
-          <button className="btn btn-circle" onClick={onMoveDown}>
-            <ArrowDown className="w-5 h-5" />
+          <button className="btn btn-circle" onClick={onDuplicate}>
+            <Copy className="w-5 h-5" />
           </button>
-        )}
-        <button className="btn btn-circle" onClick={toggleSettings}>
-          <Settings className="w-5 h-5" />
-        </button>
-        <button className="btn btn-circle" onClick={onDuplicate}>
-          <Copy className="w-5 h-5" />
-        </button>
-        {isDeletable && (
-          <button className="btn btn-circle btn-error" onClick={onDelete}>
-            <Trash2 className="w-5 h-5" />
-          </button>
-        )}
+          {isDeletable && (
+            <button className="btn btn-circle btn-error" onClick={onDelete}>
+              <Trash2 className="w-5 h-5" />
+            </button>
+          )}
+        </div>
       </div>
 
-      {isOpen && (
+      {isOpen && ReactDOM.createPortal(
         <div className="fixed inset-0 bg-black bg-opacity-50" style={{ zIndex: Z_INDEXES.ADD_BLOCK_DRAWER }}>
           <div className="drawer drawer-end">
-            <input id="block-drawer" type="checkbox" className="drawer-toggle" checked={isOpen} readOnly />
+            <input id={`block-drawer-${sectionId}`} type="checkbox" className="drawer-toggle" checked={isOpen} readOnly />
             <div className="drawer-side">
-              <label htmlFor="block-drawer" className="drawer-overlay"></label>
+              <label htmlFor={`block-drawer-${sectionId}`} className="drawer-overlay"></label>
               <div className="menu p-4 w-80 min-h-full bg-base-200 text-base-content">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-xl font-bold">Add Block</h2>
@@ -111,7 +115,8 @@ const SectionToolbar = ({
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {showSettings && (
@@ -132,7 +137,7 @@ const SectionToolbar = ({
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
