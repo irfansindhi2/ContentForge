@@ -2,6 +2,13 @@ import React, { useContext, useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
+import Strike from '@tiptap/extension-strike';
+import Code from '@tiptap/extension-code';
+import Blockquote from '@tiptap/extension-blockquote';
+import Heading from '@tiptap/extension-heading';
+import Link from '@tiptap/extension-link';
+import Highlight from '@tiptap/extension-highlight';
+import TextAlign from '@tiptap/extension-text-align';
 import { PreviewModeContext } from '../../PreviewModeContext';
 
 const TextBlock = ({
@@ -17,7 +24,29 @@ const TextBlock = ({
   const previousHeight = useRef(0);
 
   const editor = useEditor({
-    extensions: [StarterKit, Underline],
+    extensions: [
+      StarterKit.configure({
+        heading: {
+          levels: [1, 2, 3, 4, 5, 6],
+        },
+        // Disable the default link extension to avoid conflicts
+        link: false,
+      }),
+      Underline,
+      Strike,
+      Code,
+      Blockquote,
+      Heading,
+      Link.configure({
+        // Configure Link extension
+        openOnClick: false, // Prevent navigation when clicking on a link
+        linkOnPaste: true,
+      }),
+      Highlight,
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
+    ],
     content: content,
     editable: !previewMode && isEditing,
     onUpdate: ({ editor }) => {
