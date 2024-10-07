@@ -53,34 +53,32 @@ const SectionContent = ({ blocks, updateBlocks, settings, openToolbarId, onBlock
   };
 
   const handleBlockHeightChange = useCallback(
-  (blockId, newHeight) => {
-    const rowHeight = rowHeights[currentBreakpoint];
-    const marginY = margins[currentBreakpoint][1];
-    const containerPaddingY = containerPadding[1];
-    const totalRowHeight = rowHeight + marginY;
+    (blockId, newHeightInPixels) => {
+      const rowHeight = rowHeights[currentBreakpoint];
+      const marginY = margins[currentBreakpoint][1];
+      const containerPaddingY = containerPadding[1];
+      const totalRowHeight = rowHeight + marginY;
 
-    // Calculate new 'h' value
-    let newH = Math.ceil(
-      (newHeight + marginY + containerPaddingY) / totalRowHeight
-    );
+      let newH = Math.ceil(
+        (newHeightInPixels + marginY + containerPaddingY) / totalRowHeight
+      );
+      if (newH < 1) newH = 1;
 
-    if (newH < 1) newH = 1; // Ensure newH is at least 1
-
-    // Update the block's 'h' and 'minH' value
-    const updatedBlocks = blocks.map((block) => {
-      if (block.id === blockId) {
-        return {
-          ...block,
-          h: newH,
-          minH: newH, // Set minH to newH
-        };
-      }
-      return block;
-    });
-    updateBlocks(updatedBlocks);
-  },
-  [blocks, currentBreakpoint, margins, rowHeights, updateBlocks]
-);
+      // Update the block's 'h' and 'minH' value
+      const updatedBlocks = blocks.map((block) => {
+        if (block.id === blockId) {
+          return {
+            ...block,
+            h: newH,
+            minH: newH,
+          };
+        }
+        return block;
+      });
+      updateBlocks(updatedBlocks);
+    },
+    [blocks, currentBreakpoint, margins, rowHeights, updateBlocks]
+  );
 
   return (
     <div className="relative w-full" ref={ref} style={{ minHeight: `${rowHeights[currentBreakpoint]}px` }}>

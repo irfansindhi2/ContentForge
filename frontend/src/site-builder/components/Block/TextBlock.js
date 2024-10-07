@@ -22,13 +22,6 @@ const TextBlock = ({
     editable: !previewMode && isEditing,
     onUpdate: ({ editor }) => {
       updateContent(editor.getHTML());
-      if (editorRef.current) {
-        const newHeight = editorRef.current.offsetHeight;
-        if (newHeight !== previousHeight.current) {
-          previousHeight.current = newHeight;
-          onHeightChange(newHeight);
-        }
-      }
     },
     editorProps: {
       attributes: {
@@ -49,6 +42,30 @@ const TextBlock = ({
       editor.commands.focus('end');
     }
   }, [editor, isEditing]);
+
+  // Add the ResizeObserver to monitor changes in width and height
+  useEffect(() => {
+    if (editorRef.current) {
+      const observer = new ResizeObserver((entries) => {
+        for (let entry of entries) {
+          const newWidth = entry.contentRect.width;
+          const newHeight = entry.contentRect.height;
+
+          // Only trigger onHeightChange if the height has changed
+          if (newHeight !== previousHeight.current) {
+            previousHeight.current = newHeight;
+            onHeightChange(newHeight);
+          }
+        }
+      });
+      observer.observe(editorRef.current);
+
+      // Clean up the observer when the component unmounts or when editorRef changes
+      return () => {
+        observer.disconnect();
+      };
+    }
+  }, [editorRef, onHeightChange]);
 
   const handleBlur = (event) => {
     setTimeout(() => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import Block from '../Block/Block';
 import { getBlockConfig } from '../../utils/blockConfig';
@@ -30,6 +30,23 @@ const ResponsiveGrid = ({
   onHeightChange
 }) => {
   const [blockHeights, setBlockHeights] = useState({});
+
+  const handleBlockHeightChange = useCallback(
+    (blockId, newHeightInPixels) => {
+      const rowHeight = rowHeights[currentBreakpoint];
+      const marginY = margins[currentBreakpoint][1];
+      const containerPaddingY = containerPadding[1];
+      const totalRowHeight = rowHeight + marginY;
+
+      let newH = Math.ceil(
+        (newHeightInPixels + marginY + containerPaddingY) / totalRowHeight
+      );
+      if (newH < 1) newH = 1;
+
+      setBlockHeights((prev) => ({ ...prev, [blockId]: newH }));
+    },
+    [currentBreakpoint, margins, rowHeights, containerPadding]
+  );
 
   return (
     <ResponsiveGridLayout
@@ -88,7 +105,7 @@ const ResponsiveGrid = ({
               onDelete={handleDeleteBlock}
               isToolbarOpen={openToolbarId === block.id}
               onBlockClick={() => onBlockClick(block.id)}
-              onHeightChange={onHeightChange}
+              onHeightChange={(newHeight) => handleBlockHeightChange(block.id, newHeight)}
             />
           </div>
         );
