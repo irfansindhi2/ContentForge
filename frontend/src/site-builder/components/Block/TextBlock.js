@@ -1,10 +1,10 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import { PreviewModeContext } from '../../PreviewModeContext';
 
-const TextBlock = ({ content, updateContent }) => {
+const TextBlock = ({ content, updateContent, isEditing, onEditComplete }) => {
   const { previewMode } = useContext(PreviewModeContext);
 
   const editor = useEditor({
@@ -13,7 +13,7 @@ const TextBlock = ({ content, updateContent }) => {
       Underline,
     ],
     content: content,
-    editable: !previewMode,
+    editable: !previewMode && isEditing,
     onUpdate: ({ editor }) => {
       updateContent(editor.getHTML());
     },
@@ -25,11 +25,30 @@ const TextBlock = ({ content, updateContent }) => {
     },
   });
 
+  useEffect(() => {
+    if (editor) {
+      editor.setEditable(!previewMode && isEditing);
+    }
+  }, [editor, previewMode, isEditing]);
+
+  useEffect(() => {
+    if (editor && isEditing) {
+      editor.commands.focus('end');
+    }
+  }, [editor, isEditing]);
+
+  const handleBlur = () => {
+    if (isEditing) {
+      onEditComplete(editor.getHTML());
+    }
+  };
+
   return (
-      <EditorContent
-        editor={editor}
-        className="w-full h-full"
-      />
+    <EditorContent
+      editor={editor}
+      className={`w-full h-full`}
+      onBlur={handleBlur}
+    />
   );
 };
 

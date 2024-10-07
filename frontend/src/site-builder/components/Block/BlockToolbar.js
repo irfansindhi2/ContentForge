@@ -1,8 +1,9 @@
 import React from 'react';
 import { Copy, Trash2 } from 'lucide-react';
 import { Z_INDEXES } from '../../utils/zIndexes';
+import EditButton from './EditButton';
 
-const BlockToolbar = ({ onDuplicate, onDelete, visible }) => {
+const BlockToolbar = ({ onDuplicate, onDelete, onEdit, visible, blockType }) => {
   if (!visible) return null;
 
   const handleToolbarClick = (e) => {
@@ -15,6 +16,7 @@ const BlockToolbar = ({ onDuplicate, onDelete, visible }) => {
       onClick={handleToolbarClick}
       style={{ zIndex: Z_INDEXES.BLOCK_TOOLBAR }}
     >
+      <EditButton onClick={onEdit} blockType={blockType} />
       <button
         className="btn btn-sm btn-ghost"
         onClick={(e) => {

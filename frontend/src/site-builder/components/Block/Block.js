@@ -1,4 +1,4 @@
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback, useContext, useState, useEffect } from 'react';
 import { PreviewModeContext } from '../../PreviewModeContext';
 import CarouselBlock from './CarouselBlock';
 import CardBlock from './CardBlock';
@@ -14,11 +14,24 @@ const Block = React.memo(({
   onBlockClick 
 }) => {
   const { previewMode } = useContext(PreviewModeContext);
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    if (!isToolbarOpen) {
+      setIsEditing(false);
+    }
+  }, [isToolbarOpen]);
 
   const handleClick = useCallback((e) => {
     e.stopPropagation();
-    onBlockClick(block.id);
-  }, [onBlockClick, block.id]);
+    if (!previewMode) {
+      if (isToolbarOpen) {
+        setIsEditing(true);
+      } else {
+        onBlockClick(block.id);
+      }
+    }
+  }, [onBlockClick, block.id, isToolbarOpen, previewMode]);
 
   const handleDuplicate = useCallback(() => {
     onDuplicate(block);
@@ -28,22 +41,48 @@ const Block = React.memo(({
     onDelete(block.id);
   }, [onDelete, block.id]);
 
+  const handleEdit = useCallback(() => {
+    setIsEditing(prev => !prev);
+  }, []);
+
+  const handleEditComplete = useCallback((newContent) => {
+    updateBlockContent(newContent);
+    setIsEditing(false);
+  }, [updateBlockContent]);
+
   return (
     <div
-      className="relative w-full h-full"
+      className={`relative w-full h-full ${isEditing ? 'editing' : ''}`}
       onClick={handleClick}
     >
       <BlockToolbar
         visible={isToolbarOpen && !previewMode}
         onDuplicate={handleDuplicate}
         onDelete={handleDelete}
+        onEdit={handleEdit}
+        blockType={block.type}
+        isEditing={isEditing}
       />
-      {block.type === 'carousel' && <CarouselBlock items={block.content} />}
-      {block.type === 'card' && <CardBlock content={block.content} />}
+      {block.type === 'carousel' && (
+        <CarouselBlock 
+          items={block.content} 
+          isEditing={isEditing}
+          onEditComplete={handleEditComplete}
+        />
+      )}
+      {block.type === 'card' && (
+        <CardBlock 
+          content={block.content} 
+          isEditing={isEditing}
+          onEditComplete={handleEditComplete}
+        />
+      )}
       {block.type === 'text' && (
         <TextBlock
           content={block.content}
-          updateContent={(newContent) => updateBlockContent(newContent)}
+          updateContent={updateBlockContent}
+          isEditing={isEditing}
+          onEditComplete={handleEditComplete}
         />
       )}
     </div>
