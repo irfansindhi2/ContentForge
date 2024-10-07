@@ -85,7 +85,7 @@ const SectionToolbar = ({
 
       {isOpen && ReactDOM.createPortal(
         <div className="fixed inset-0 bg-black bg-opacity-50" style={{ zIndex: Z_INDEXES.ADD_BLOCK_DRAWER }}>
-          <div className="drawer drawer-end">
+          <div className="drawer drawer-start">
             <input id={`block-drawer-${sectionId}`} type="checkbox" className="drawer-toggle" checked={isOpen} readOnly />
             <div className="drawer-side">
               <label htmlFor={`block-drawer-${sectionId}`} className="drawer-overlay"></label>
