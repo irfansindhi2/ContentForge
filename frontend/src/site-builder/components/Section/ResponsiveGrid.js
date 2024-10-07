@@ -27,27 +27,9 @@ const ResponsiveGrid = ({
   handleDeleteBlock,
   openToolbarId,
   onBlockClick,
+  onHeightChange
 }) => {
   const [blockHeights, setBlockHeights] = useState({});
-
-  const handleHeightChange = (blockId, height) => {
-    setBlockHeights(prev => {
-      const newHeight = Math.ceil(height / rowHeights[currentBreakpoint]);
-      if (prev[blockId] !== newHeight) {
-        const updatedLayouts = {...layouts};
-        Object.keys(updatedLayouts).forEach(breakpoint => {
-          const layout = updatedLayouts[breakpoint];
-          const blockIndex = layout.findIndex(item => item.i === blockId);
-          if (blockIndex !== -1) {
-            layout[blockIndex] = {...layout[blockIndex], h: newHeight};
-          }
-        });
-        onLayoutChange(updatedLayouts[currentBreakpoint], updatedLayouts);
-        return {...prev, [blockId]: newHeight};
-      }
-      return prev;
-    });
-  };
 
   return (
     <ResponsiveGridLayout
@@ -106,7 +88,7 @@ const ResponsiveGrid = ({
               onDelete={handleDeleteBlock}
               isToolbarOpen={openToolbarId === block.id}
               onBlockClick={() => onBlockClick(block.id)}
-              onHeightChange={(height) => handleHeightChange(block.id, height)}
+              onHeightChange={onHeightChange}
             />
           </div>
         );

@@ -4,21 +4,30 @@ import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import { PreviewModeContext } from '../../PreviewModeContext';
 
-const TextBlock = ({ content, updateContent, isEditing, onEditComplete, setEditor, onHeightChange }) => {
+const TextBlock = ({
+  content,
+  updateContent,
+  isEditing,
+  onEditComplete,
+  setEditor,
+  onHeightChange,
+}) => {
   const { previewMode } = useContext(PreviewModeContext);
   const editorRef = useRef(null);
+  const previousHeight = useRef(0);
 
   const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Underline,
-    ],
+    extensions: [StarterKit, Underline],
     content: content,
     editable: !previewMode && isEditing,
     onUpdate: ({ editor }) => {
       updateContent(editor.getHTML());
       if (editorRef.current) {
-        onHeightChange(editorRef.current.offsetHeight);
+        const newHeight = editorRef.current.offsetHeight;
+        if (newHeight !== previousHeight.current) {
+          previousHeight.current = newHeight;
+          onHeightChange(newHeight);
+        }
       }
     },
     editorProps: {
@@ -40,12 +49,6 @@ const TextBlock = ({ content, updateContent, isEditing, onEditComplete, setEdito
       editor.commands.focus('end');
     }
   }, [editor, isEditing]);
-
-  useEffect(() => {
-    if (editorRef.current) {
-      onHeightChange(editorRef.current.offsetHeight);
-    }
-  }, [content, onHeightChange]);
 
   const handleBlur = (event) => {
     setTimeout(() => {

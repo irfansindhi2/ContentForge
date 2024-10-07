@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useCallback } from 'react';
 import { PreviewModeContext } from '../../PreviewModeContext';
 import GridOverlay from './GridOverlay';
 import { useMeasure } from 'react-use';
@@ -52,6 +52,36 @@ const SectionContent = ({ blocks, updateBlocks, settings, openToolbarId, onBlock
     }
   };
 
+  const handleBlockHeightChange = useCallback(
+  (blockId, newHeight) => {
+    const rowHeight = rowHeights[currentBreakpoint];
+    const marginY = margins[currentBreakpoint][1];
+    const containerPaddingY = containerPadding[1];
+    const totalRowHeight = rowHeight + marginY;
+
+    // Calculate new 'h' value
+    let newH = Math.ceil(
+      (newHeight + marginY + containerPaddingY) / totalRowHeight
+    );
+
+    if (newH < 1) newH = 1; // Ensure newH is at least 1
+
+    // Update the block's 'h' and 'minH' value
+    const updatedBlocks = blocks.map((block) => {
+      if (block.id === blockId) {
+        return {
+          ...block,
+          h: newH,
+          minH: newH, // Set minH to newH
+        };
+      }
+      return block;
+    });
+    updateBlocks(updatedBlocks);
+  },
+  [blocks, currentBreakpoint, margins, rowHeights, updateBlocks]
+);
+
   return (
     <div className="relative w-full" ref={ref} style={{ minHeight: `${rowHeights[currentBreakpoint]}px` }}>
       {isDragging && !previewMode && width > 0 && (
@@ -87,10 +117,7 @@ const SectionContent = ({ blocks, updateBlocks, settings, openToolbarId, onBlock
         handleDeleteBlock={handleDeleteBlock}
         openToolbarId={openToolbarId}
         onBlockClick={onBlockClick}
-        onHeightChange={(blockId, height) => {
-          // Handle height change here if needed
-          console.log(`Block ${blockId} height changed to ${height}`);
-        }}
+        onHeightChange={handleBlockHeightChange}
       />
     </div>
   );

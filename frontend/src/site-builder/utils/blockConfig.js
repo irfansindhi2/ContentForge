@@ -3,7 +3,7 @@
 export const blockConfig = {
     text: {
       minW: 2,
-      minH: 2,
+      minH: 1,
       defaultW: 6,
       defaultH: 2,
       defaultX: 0,

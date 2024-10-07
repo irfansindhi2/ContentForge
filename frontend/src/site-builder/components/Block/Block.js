@@ -52,6 +52,13 @@ const Block = React.memo(({
     setIsEditing(false);
   }, [updateBlockContent]);
 
+  const handleHeightChange = useCallback(
+    (newHeight) => {
+      onHeightChange(block.id, newHeight);
+    },
+    [block.id, onHeightChange]
+  );
+
   return (
     <div
       className={`relative w-full h-full ${isEditing ? 'editing' : ''}`}
@@ -87,7 +94,7 @@ const Block = React.memo(({
           isEditing={isEditing}
           onEditComplete={handleEditComplete}
           setEditor={setEditor}
-          onHeightChange={onHeightChange}
+          onHeightChange={handleHeightChange}
         />
       )}
     </div>
