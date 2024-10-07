@@ -42,7 +42,7 @@ const GridOverlay = ({
               {Array.from({ length: cols }).map((_, colIndex) => (
                 <div
                   key={`cell-${rowIndex}-${colIndex}`}
-                  className={`bg-blue-100 bg-opacity-60 border border-blue-300 border-opacity-20 ${
+                  className={`border border-blue-500 border-opacity-50 ${
                     currentPosition &&
                     currentPosition.x === colIndex &&
                     currentPosition.y === rowIndex
