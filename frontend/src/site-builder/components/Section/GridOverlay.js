@@ -46,8 +46,6 @@ const GridOverlay = ({
                     currentPosition &&
                     currentPosition.x === colIndex &&
                     currentPosition.y === rowIndex
-                      ? 'bg-blue-300 bg-opacity-80'
-                      : ''
                   }`}
                   style={{
                     width: `${columnWidth}px`,
