@@ -56,6 +56,7 @@ const Block = React.memo(({
     <div
       className={`relative w-full h-full ${isEditing ? 'editing' : ''}`}
       onClick={handleClick}
+      style={{ display: 'flow-root' }}
     >
       <BlockToolbar
         visible={isToolbarOpen && !previewMode}
