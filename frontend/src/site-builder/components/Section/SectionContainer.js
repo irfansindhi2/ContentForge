@@ -66,7 +66,7 @@ const SectionContainer = ({
   return (
     <div
       id={sectionId}
-      className={`relative w-full ${!previewMode ? 'hover:outline hover:outline-2 hover:outline-blue-500 hover:outline-offset-[-2px] p-2 my-2' : ''}`}
+      className={`relative w-full section-container ${!previewMode ? 'p-2 my-2' : ''}`}
     >
       {!previewMode && (
         <SectionToolbar
@@ -83,7 +83,7 @@ const SectionContainer = ({
         />
       )}
       <div className="relative">
-      <SectionContent 
+        <SectionContent 
           blocks={blocks} 
           updateBlocks={updateBlocks} 
           settings={settings} 

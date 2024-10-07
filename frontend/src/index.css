@@ -20,15 +20,16 @@
     content: none;
 }
 
-.react-resizable-handle {
+.react-grid-item > .react-resizable-handle {
     background-image: none;
     padding: 0 !important;
     opacity: 0;
 }
 
-.react-grid-item:hover > .react-resizable-handle {
+.react-grid-item:hover > .react-resizable-handle,
+.react-grid-item:focus-within > .react-resizable-handle {
     opacity: 1;
-  }
+}
 
 .react-grid-item > .react-resizable-handle::before {
     content: '';

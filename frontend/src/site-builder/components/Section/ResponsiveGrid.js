@@ -88,7 +88,11 @@ const ResponsiveGrid = ({
         return (
           <div
             key={block.id}
-            className={`w-full ${!previewMode ? 'hover:outline hover:outline-2 hover:outline-blue-500' : ''}`}
+            className={`w-full ${
+              !previewMode
+                ? 'hover:outline hover:outline-2 hover:outline-blue-500 focus-within:outline focus-within:outline-2 focus-within:outline-blue-500'
+                : ''
+            }`}
             data-grid={{
               x: Number(block.x) || config.defaultX,
               y: Number(block.y) || config.defaultY,
