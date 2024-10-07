@@ -87,6 +87,10 @@ const SectionContent = ({ blocks, updateBlocks, settings, openToolbarId, onBlock
         handleDeleteBlock={handleDeleteBlock}
         openToolbarId={openToolbarId}
         onBlockClick={onBlockClick}
+        onHeightChange={(blockId, height) => {
+          // Handle height change here if needed
+          console.log(`Block ${blockId} height changed to ${height}`);
+        }}
       />
     </div>
   );

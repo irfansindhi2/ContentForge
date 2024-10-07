@@ -11,7 +11,8 @@ const Block = React.memo(({
   onDuplicate, 
   onDelete, 
   isToolbarOpen, 
-  onBlockClick 
+  onBlockClick ,
+  onHeightChange
 }) => {
   const { previewMode } = useContext(PreviewModeContext);
   const [isEditing, setIsEditing] = useState(false);
@@ -86,6 +87,7 @@ const Block = React.memo(({
           isEditing={isEditing}
           onEditComplete={handleEditComplete}
           setEditor={setEditor}
+          onHeightChange={onHeightChange}
         />
       )}
     </div>

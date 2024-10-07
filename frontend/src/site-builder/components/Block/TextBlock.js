@@ -1,11 +1,12 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import { PreviewModeContext } from '../../PreviewModeContext';
 
-const TextBlock = ({ content, updateContent, isEditing, onEditComplete, setEditor }) => {
+const TextBlock = ({ content, updateContent, isEditing, onEditComplete, setEditor, onHeightChange }) => {
   const { previewMode } = useContext(PreviewModeContext);
+  const editorRef = useRef(null);
 
   const editor = useEditor({
     extensions: [
@@ -16,10 +17,13 @@ const TextBlock = ({ content, updateContent, isEditing, onEditComplete, setEdito
     editable: !previewMode && isEditing,
     onUpdate: ({ editor }) => {
       updateContent(editor.getHTML());
+      if (editorRef.current) {
+        onHeightChange(editorRef.current.offsetHeight);
+      }
     },
     editorProps: {
       attributes: {
-        class: 'prose max-w-none w-full h-full',
+        class: 'prose max-w-none w-full',
         style: 'border: none; outline: none;',
       },
     },
@@ -36,6 +40,12 @@ const TextBlock = ({ content, updateContent, isEditing, onEditComplete, setEdito
       editor.commands.focus('end');
     }
   }, [editor, isEditing]);
+
+  useEffect(() => {
+    if (editorRef.current) {
+      onHeightChange(editorRef.current.offsetHeight);
+    }
+  }, [content, onHeightChange]);
 
   const handleBlur = (event) => {
     setTimeout(() => {
@@ -56,8 +66,9 @@ const TextBlock = ({ content, updateContent, isEditing, onEditComplete, setEdito
   return (
     <EditorContent
       editor={editor}
-      className={`w-full h-full`}
+      className="w-full"
       onBlur={handleBlur}
+      ref={editorRef}
     />
   );
 };
