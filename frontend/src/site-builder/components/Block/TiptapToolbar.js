@@ -7,7 +7,7 @@ const TiptapToolbar = ({ editor }) => {
   }
 
   return (
-    <div className="flex space-x-2">
+    <div className="tiptap-toolbar flex space-x-2">
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
         className={`btn btn-sm btn-ghost ${editor.isActive('bold') ? 'btn-active' : ''}`}

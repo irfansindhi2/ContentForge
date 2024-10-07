@@ -37,10 +37,20 @@ const TextBlock = ({ content, updateContent, isEditing, onEditComplete, setEdito
     }
   }, [editor, isEditing]);
 
-  const handleBlur = () => {
-    if (isEditing) {
-      onEditComplete(editor.getHTML());
-    }
+  const handleBlur = (event) => {
+    setTimeout(() => {
+      const focusedElement = document.activeElement;
+      if (
+        focusedElement &&
+        (focusedElement.closest('.tiptap-toolbar') || focusedElement.closest('.ProseMirror'))
+      ) {
+        // Focus is still within editor or toolbar, do not end editing
+        return;
+      }
+      if (isEditing) {
+        onEditComplete(editor.getHTML());
+      }
+    }, 0);
   };
 
   return (
