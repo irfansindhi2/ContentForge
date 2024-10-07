@@ -15,6 +15,7 @@ const Block = React.memo(({
 }) => {
   const { previewMode } = useContext(PreviewModeContext);
   const [isEditing, setIsEditing] = useState(false);
+  const [editor, setEditor] = useState(null);
 
   useEffect(() => {
     if (!isToolbarOpen) {
@@ -62,6 +63,7 @@ const Block = React.memo(({
         onEdit={handleEdit}
         blockType={block.type}
         isEditing={isEditing}
+        editor={editor}
       />
       {block.type === 'carousel' && (
         <CarouselBlock 
@@ -83,6 +85,7 @@ const Block = React.memo(({
           updateContent={updateBlockContent}
           isEditing={isEditing}
           onEditComplete={handleEditComplete}
+          setEditor={setEditor}
         />
       )}
     </div>

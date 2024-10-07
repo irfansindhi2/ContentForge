@@ -4,7 +4,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import { PreviewModeContext } from '../../PreviewModeContext';
 
-const TextBlock = ({ content, updateContent, isEditing, onEditComplete }) => {
+const TextBlock = ({ content, updateContent, isEditing, onEditComplete, setEditor }) => {
   const { previewMode } = useContext(PreviewModeContext);
 
   const editor = useEditor({
@@ -27,9 +27,9 @@ const TextBlock = ({ content, updateContent, isEditing, onEditComplete }) => {
 
   useEffect(() => {
     if (editor) {
-      editor.setEditable(!previewMode && isEditing);
+      setEditor(editor);
     }
-  }, [editor, previewMode, isEditing]);
+  }, [editor, setEditor]);
 
   useEffect(() => {
     if (editor && isEditing) {
