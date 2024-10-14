@@ -82,7 +82,7 @@ const SectionContainer = ({
           updateSettings={handleSettingsChange}
         />
       )}
-      <div className="relative">
+      <div>
         <SectionContent 
           blocks={blocks} 
           updateBlocks={updateBlocks} 
