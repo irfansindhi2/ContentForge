@@ -6,7 +6,6 @@ export const useDragResize = (initialMaxRows) => {
   const [currentPosition, setCurrentPosition] = useState(null);
 
   const handleDragStart = useCallback(() => {
-    setIsDragging(true);
     setOverlayMaxRows(initialMaxRows);
   }, [initialMaxRows]);
 
@@ -20,6 +19,7 @@ export const useDragResize = (initialMaxRows) => {
     const totalRows = Math.max(placeholder.y + placeholder.h, 1);
     setOverlayMaxRows(totalRows);
     setCurrentPosition({ x: newItem.x, y: newItem.y });
+    setIsDragging(true);
   }, []);
 
   return {
