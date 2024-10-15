@@ -1,4 +1,4 @@
-import React, { useContext, useCallback } from 'react';
+import React, { useContext, useCallback, useState } from 'react';
 import { PreviewModeContext } from '../../PreviewModeContext';
 import GridOverlay from './GridOverlay';
 import { useMeasure } from 'react-use';
@@ -32,11 +32,12 @@ const SectionContent = ({ blocks, updateBlocks, settings, openToolbarId, onBlock
   const { currentBreakpoint, setCurrentBreakpoint, layouts, maxRows } = useLayoutManager(blocks, cols);
   const { isDragging, overlayMaxRows, currentPosition, handleDragStart, handleDragStop, handleDrag } = useDragResize(maxRows);
   const { updateBlockContent, handleDuplicateBlock, handleDeleteBlock } = useBlockManager(blocks, updateBlocks);
+  const [blockPositions, setBlockPositions] = useState({});
 
   const handleLayoutChange = (currentLayout, allLayouts) => {
     if (!previewMode) {
-      const updatedBlocks = blocks.map(block => {
-        const layoutItem = currentLayout.find(item => item.i === block.id);
+      const updatedBlocks = blocks.map((block) => {
+        const layoutItem = currentLayout.find((item) => item.i === block.id);
         if (layoutItem) {
           return {
             ...block,
@@ -49,6 +50,13 @@ const SectionContent = ({ blocks, updateBlocks, settings, openToolbarId, onBlock
         return block;
       });
       updateBlocks(updatedBlocks);
+
+      // Update block positions
+      const positions = {};
+      currentLayout.forEach((item) => {
+        positions[item.i] = { x: item.x, y: item.y };
+      });
+      setBlockPositions(positions);
     }
   };
 
@@ -115,6 +123,7 @@ const SectionContent = ({ blocks, updateBlocks, settings, openToolbarId, onBlock
         handleDeleteBlock={handleDeleteBlock}
         openToolbarId={openToolbarId}
         onBlockClick={onBlockClick}
+        blockPositions={blockPositions}
         onHeightChange={handleBlockHeightChange}
       />
     </div>
