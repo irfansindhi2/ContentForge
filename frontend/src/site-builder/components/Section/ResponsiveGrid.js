@@ -27,7 +27,6 @@ const ResponsiveGrid = ({
   handleDeleteBlock,
   openToolbarId,
   onBlockClick,
-  blockPositions,
   onHeightChange
 }) => {
   const [blockHeights, setBlockHeights] = useState({});
@@ -86,7 +85,6 @@ const ResponsiveGrid = ({
     >
       {blocks.map((block) => {
         const config = getBlockConfig(block.type);
-        const blockPosition = blockPositions[block.id] || { x: block.x, y: block.y };
         return (
           <div
             key={block.id}
@@ -112,7 +110,6 @@ const ResponsiveGrid = ({
               isToolbarOpen={openToolbarId === block.id}
               onBlockClick={() => onBlockClick(block.id)}
               onHeightChange={(newHeight) => handleBlockHeightChange(block.id, newHeight)}
-              blockPosition={blockPosition}
             />
           </div>
         );

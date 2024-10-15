@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useState, useEffect, useRef } from 'react';
+import React, { useCallback, useContext, useState, useEffect } from 'react';
 import { PreviewModeContext } from '../../PreviewModeContext';
 import CarouselBlock from './CarouselBlock';
 import CardBlock from './CardBlock';
@@ -12,13 +12,11 @@ const Block = React.memo(({
   onDelete, 
   isToolbarOpen, 
   onBlockClick ,
-  onHeightChange,
-  blockPosition,
+  onHeightChange
 }) => {
   const { previewMode } = useContext(PreviewModeContext);
   const [isEditing, setIsEditing] = useState(false);
   const [editor, setEditor] = useState(null);
-  const blockRef = useRef(null);
 
   useEffect(() => {
     if (!isToolbarOpen) {
@@ -56,7 +54,6 @@ const Block = React.memo(({
 
   return (
     <div
-      ref={blockRef}
       className={`relative w-full h-full ${isEditing ? 'editing' : ''}`}
       onClick={handleClick}
       style={{ display: 'flow-root' }}
@@ -69,8 +66,6 @@ const Block = React.memo(({
         blockType={block.type}
         isEditing={isEditing}
         editor={editor}
-        blockRef={blockRef}
-        blockPosition={blockPosition}
       />
       {block.type === 'carousel' && (
         <CarouselBlock 

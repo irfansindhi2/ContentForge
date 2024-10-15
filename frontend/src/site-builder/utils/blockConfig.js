@@ -5,7 +5,7 @@ export const blockConfig = {
       minW: 2,
       minH: 1,
       defaultW: 6,
-      defaultH: 1,
+      defaultH: 2,
       defaultX: 0,
       defaultY: 0,
     },
