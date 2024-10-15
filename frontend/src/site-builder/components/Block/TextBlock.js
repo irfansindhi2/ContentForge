@@ -2,10 +2,6 @@ import React, { useContext, useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
-import Strike from '@tiptap/extension-strike';
-import Code from '@tiptap/extension-code';
-import Blockquote from '@tiptap/extension-blockquote';
-import Heading from '@tiptap/extension-heading';
 import Link from '@tiptap/extension-link';
 import Highlight from '@tiptap/extension-highlight';
 import TextAlign from '@tiptap/extension-text-align';
@@ -33,10 +29,6 @@ const TextBlock = ({
         link: false,
       }),
       Underline,
-      Strike,
-      Code,
-      Blockquote,
-      Heading,
       Link.configure({
         // Configure Link extension
         openOnClick: false, // Prevent navigation when clicking on a link
