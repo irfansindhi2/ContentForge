@@ -52,10 +52,17 @@ const Block = React.memo(({
     setIsEditing(false);
   }, [updateBlockContent]);
 
+  const handleMouseDown = useCallback((e) => {
+    if (isEditing) {
+      e.stopPropagation();
+    }
+  }, [isEditing]);
+
   return (
     <div
       className={`relative w-full h-full ${isEditing ? 'editing' : ''}`}
       onClick={handleClick}
+      onMouseDown={handleMouseDown}
       style={{ display: 'flow-root' }}
     >
       <BlockToolbar
