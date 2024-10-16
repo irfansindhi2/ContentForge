@@ -59,13 +59,13 @@ const ResponsiveGrid = ({
       containerPadding={containerPadding}
       onBreakpointChange={onBreakpointChange}
       onLayoutChange={(currentLayout, allLayouts) => {
-        const updatedLayouts = {...allLayouts};
+        const updatedLayouts = { ...allLayouts };
         Object.keys(blockHeights).forEach(blockId => {
           Object.keys(updatedLayouts).forEach(breakpoint => {
             const layout = updatedLayouts[breakpoint];
             const blockIndex = layout.findIndex(item => item.i === blockId);
             if (blockIndex !== -1) {
-              layout[blockIndex] = {...layout[blockIndex], h: blockHeights[blockId]};
+              layout[blockIndex] = { ...layout[blockIndex], h: blockHeights[blockId] };
             }
           });
         });
@@ -76,6 +76,7 @@ const ResponsiveGrid = ({
       resizeHandles={["s", "w", "e", "n", "sw", "se", "nw", "ne"]}
       compactType={null}
       preventCollision
+      allowOverlap={blocks.some(block => block.type === 'text')} // Enable overlap only if a TextBlock is present
       onDragStart={onDragStart}
       onDrag={onDrag}
       onDragStop={onDragStop}
@@ -88,11 +89,10 @@ const ResponsiveGrid = ({
         return (
           <div
             key={block.id}
-            className={`w-full ${
-              !previewMode
+            className={`w-full ${!previewMode
                 ? 'hover:outline hover:outline-2 hover:outline-blue-500 focus-within:outline focus-within:outline-2 focus-within:outline-blue-500'
                 : ''
-            }`}
+              }`}
             data-grid={{
               x: Number(block.x) || config.defaultX,
               y: Number(block.y) || config.defaultY,
