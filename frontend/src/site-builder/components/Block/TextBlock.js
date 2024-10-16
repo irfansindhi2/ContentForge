@@ -14,6 +14,7 @@ const TextBlock = ({
   onEditComplete,
   setEditor,
   onHeightChange,
+  onBlockClick
 }) => {
   const { previewMode } = useContext(PreviewModeContext);
   const editorRef = useRef(null);
@@ -100,6 +101,8 @@ const TextBlock = ({
       }
       if (isEditing) {
         onEditComplete(editor.getHTML());
+        // Add this line to close the BlockToolbar
+        onBlockClick(null);
       }
     }, 0);
   };

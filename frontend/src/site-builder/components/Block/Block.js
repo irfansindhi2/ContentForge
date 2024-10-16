@@ -89,6 +89,7 @@ const Block = React.memo(({
           onEditComplete={handleEditComplete}
           setEditor={setEditor}
           onHeightChange={onHeightChange}
+          onBlockClick={onBlockClick}
         />
       )}
     </div>

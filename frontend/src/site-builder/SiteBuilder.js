@@ -35,7 +35,7 @@ const SiteBuilder = () => {
 
   // To track opening and closing of block toolbar
   const handleBlockClick = (blockId) => {
-    setOpenToolbarId(prevId => prevId === blockId ? prevId : blockId);
+    setOpenToolbarId(prevId => prevId === blockId ? null : blockId);
   };
 
   useEffect(() => {
