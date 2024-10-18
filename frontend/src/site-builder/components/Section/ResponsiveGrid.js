@@ -76,7 +76,7 @@ const ResponsiveGrid = ({
       resizeHandles={["s", "w", "e", "n", "sw", "se", "nw", "ne"]}
       compactType={null}
       preventCollision
-      allowOverlap={blocks.some(block => block.type === 'text')} // Enable overlap only if a TextBlock is present
+      allowOverlap={blocks.length > 1 && blocks.some(block => block.type === 'text')} // Enable overlap only if a TextBlock is present
       onDragStart={onDragStart}
       onDrag={onDrag}
       onDragStop={onDragStop}
