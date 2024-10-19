@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import SectionContainer from './components/Section/SectionContainer';
 import { PreviewModeContext } from './PreviewModeContext';
 import defaultSettings from './defaultSettings';
+import ThemeSettings from './components/Theme/ThemeSettings';
+import { defaultTheme } from './components/Theme/themeManagement';
 
 const SiteBuilder = () => {
   const [sections, setSections] = useState([]);
@@ -10,6 +12,8 @@ const SiteBuilder = () => {
   const { setPreviewMode } = useContext(PreviewModeContext);
   const navigate = useNavigate();
   const newSectionRef = useRef(null);
+  const [isThemeOpen, setIsThemeOpen] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState(defaultTheme);
 
   useEffect(() => {
     // Automatically add an empty section if there are no sections
@@ -139,12 +143,15 @@ const SiteBuilder = () => {
 
   return (
     <div>
-      <button className="btn btn-primary" onClick={handlePreview}>
+      <button className="btn btn-primary ml-2" onClick={handlePreview}>
         Preview Mode
       </button>
       <button className="btn btn-secondary ml-4" onClick={addSection}>
         Add Section
       </button>
+      <button className="btn btn-outline ml-4" onClick={() => setIsThemeOpen(true)}>
+          Theme Settings
+        </button>
 
       <div id="preview-section">
         {sections.map((section, index) => (
@@ -165,9 +172,16 @@ const SiteBuilder = () => {
             isDeletable={sections.length > 1}
             openToolbarId={openToolbarId}
             onBlockClick={handleBlockClick}
+            theme={currentTheme}
           />
         ))}
       </div>
+      <ThemeSettings
+        isOpen={isThemeOpen}
+        onClose={() => setIsThemeOpen(false)}
+        currentTheme={currentTheme}
+        setCurrentTheme={setCurrentTheme}
+      />
     </div>
   );
 };
