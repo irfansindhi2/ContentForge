@@ -12,7 +12,8 @@ const Block = React.memo(({
   onDelete, 
   isToolbarOpen, 
   onBlockClick ,
-  onHeightChange
+  onHeightChange,
+  theme
 }) => {
   const { previewMode } = useContext(PreviewModeContext);
   const [isEditing, setIsEditing] = useState(false);
@@ -79,6 +80,7 @@ const Block = React.memo(({
           items={block.content} 
           isEditing={isEditing}
           onEditComplete={handleEditComplete}
+          theme={theme}
         />
       )}
       {block.type === 'card' && (
@@ -86,6 +88,7 @@ const Block = React.memo(({
           content={block.content} 
           isEditing={isEditing}
           onEditComplete={handleEditComplete}
+          theme={theme}
         />
       )}
       {block.type === 'text' && (
@@ -97,6 +100,7 @@ const Block = React.memo(({
           setEditor={setEditor}
           onHeightChange={onHeightChange}
           onBlockClick={onBlockClick}
+          theme={theme}
         />
       )}
     </div>

@@ -5,6 +5,7 @@ import { PreviewModeContext } from '../../PreviewModeContext';
 import { mergeSettings } from '../../utils/settingsUtils';
 import { getBlockConfig } from '../../utils/blockConfig';
 import { Z_INDEXES } from '../../utils/zIndexes';
+import { defaultTheme } from '../../components/Theme/themeManagement';
 
 const SectionContainer = ({ 
   sectionId, 
@@ -20,7 +21,8 @@ const SectionContainer = ({
   isLast, 
   isDeletable,
   openToolbarId,
-  onBlockClick
+  onBlockClick,
+  theme = defaultTheme
 }) => {
   const { previewMode } = useContext(PreviewModeContext);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -67,6 +69,7 @@ const SectionContainer = ({
     <div
       id={sectionId}
       className={`relative w-full section-container ${!previewMode ? 'p-2 my-2' : ''}`}
+      style={{ backgroundColor: theme.colors.background, color: theme.colors.text }}
     >
       {!previewMode && (
         <SectionToolbar
@@ -89,6 +92,7 @@ const SectionContainer = ({
           settings={settings} 
           openToolbarId={openToolbarId}
           onBlockClick={onBlockClick}
+          theme={theme}
         />
       </div>
 

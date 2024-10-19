@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { XIcon, Settings, Copy } from 'lucide-react';
 import { themes, fonts, getThemeByName, addNewTheme, updateTheme, deleteTheme, defaultTheme } from './themeManagement';
@@ -7,12 +7,29 @@ import { Z_INDEXES } from '../../utils/zIndexes';
 const ThemeSettings = ({ isOpen, onClose, currentTheme, setCurrentTheme }) => {
   const [selectedTheme, setSelectedTheme] = useState(currentTheme || defaultTheme);
   const [newThemeName, setNewThemeName] = useState('');
+  const settingsRef = useRef(null);
 
   useEffect(() => {
     if (currentTheme) {
       setSelectedTheme(currentTheme);
     }
   }, [currentTheme]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (settingsRef.current && !settingsRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
 
   const handleThemeChange = (themeName) => {
     const theme = getThemeByName(themeName);
@@ -30,8 +47,8 @@ const ThemeSettings = ({ isOpen, onClose, currentTheme, setCurrentTheme }) => {
     setCurrentTheme(updatedTheme);
   };
 
-  const handleFontChange = (e) => {
-    const updatedTheme = { ...selectedTheme, font: e.target.value };
+  const handleFontChange = (font) => {
+    const updatedTheme = { ...selectedTheme, font };
     setSelectedTheme(updatedTheme);
     updateTheme(selectedTheme.name, updatedTheme);
     setCurrentTheme(updatedTheme);
@@ -50,11 +67,11 @@ const ThemeSettings = ({ isOpen, onClose, currentTheme, setCurrentTheme }) => {
   const colorOrder = ['primary', 'secondary', 'accent', 'background', 'text', 'border'];
 
   return isOpen && ReactDOM.createPortal(
-    <div className="fixed inset-y-0 right-0 w-80 bg-base-100 shadow-xl" style={{ zIndex: Z_INDEXES.THEME_SETTINGS_DRAWER }}>
+    <div ref={settingsRef} className="fixed inset-y-0 right-0 w-80 bg-base-100 shadow-xl" style={{ zIndex: Z_INDEXES.THEME_SETTINGS_DRAWER }}>
       <div className="flex flex-col h-full">
         <div className="flex justify-between items-center p-4 border-b">
           <h2 className="text-xl font-bold">Theme Settings</h2>
-          <button className="btn btn-ghost btn-sm" onClick={onClose}>
+          <button className="btn btn-circle btn-ghost" onClick={onClose}>
             <XIcon className="w-5 h-5" />
           </button>
         </div>
@@ -67,7 +84,7 @@ const ThemeSettings = ({ isOpen, onClose, currentTheme, setCurrentTheme }) => {
               <div className="dropdown w-full">
                 <label tabIndex={0} className="btn btn-outline w-full justify-between">
                   {selectedTheme.name}
-                  <svg className="fill-current" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"/></svg>
+                  <svg className="fill-current" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg>
                 </label>
                 <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-full">
                   {themes.map((theme) => (
@@ -98,15 +115,17 @@ const ThemeSettings = ({ isOpen, onClose, currentTheme, setCurrentTheme }) => {
               <label className="label">
                 <span className="label-text">Font</span>
               </label>
-              <select
-                value={selectedTheme.font}
-                onChange={handleFontChange}
-                className="select select-bordered w-full"
-              >
-                {fonts.map((font) => (
-                  <option key={font} value={font}>{font}</option>
-                ))}
-              </select>
+              <div className="dropdown w-full">
+                <label tabIndex={0} className="btn btn-outline w-full justify-between">
+                  {selectedTheme.font}
+                  <svg className="fill-current" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg>
+                </label>
+                <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-full">
+                  {fonts.map((font) => (
+                    <li key={font}><a onClick={() => handleFontChange(font)}>{font}</a></li>
+                  ))}
+                </ul>
+              </div>
             </div>
             <div className="form-control w-full">
               <label className="label">

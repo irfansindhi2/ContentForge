@@ -24,7 +24,11 @@ const SiteBuilder = () => {
 
   const handlePreview = () => {
     setPreviewMode(true);
-    navigate('/preview', { state: { sections } });
+    const sectionsWithTheme = sections.map(section => ({
+      ...section,
+      theme: currentTheme
+    }));
+    navigate('/preview', { state: { sections: sectionsWithTheme } });
   };
 
   const createBlock = (type = 'text', content = '') => {

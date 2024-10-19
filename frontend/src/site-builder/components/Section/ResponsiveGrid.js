@@ -27,7 +27,8 @@ const ResponsiveGrid = ({
   handleDeleteBlock,
   openToolbarId,
   onBlockClick,
-  onHeightChange
+  onHeightChange,
+  theme
 }) => {
   const [blockHeights, setBlockHeights] = useState({});
 
@@ -110,6 +111,7 @@ const ResponsiveGrid = ({
               isToolbarOpen={openToolbarId === block.id}
               onBlockClick={() => onBlockClick(block.id)}
               onHeightChange={(newHeight) => handleBlockHeightChange(block.id, newHeight)}
+              theme={theme}
             />
           </div>
         );

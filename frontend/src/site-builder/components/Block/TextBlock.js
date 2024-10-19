@@ -14,7 +14,8 @@ const TextBlock = ({
   onEditComplete,
   setEditor,
   onHeightChange,
-  onBlockClick
+  onBlockClick,
+  theme
 }) => {
   const { previewMode } = useContext(PreviewModeContext);
   const editorRef = useRef(null);
@@ -113,6 +114,10 @@ const TextBlock = ({
       className="w-full"
       onBlur={handleBlur}
       ref={editorRef}
+      style={{
+        color: theme.colors.text,
+        fontFamily: theme.font,
+      }}
     />
   );
 };

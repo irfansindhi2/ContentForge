@@ -10,7 +10,7 @@ import { useDragResize } from '../../hooks/useDragResize';
 import { useBlockManager } from '../../hooks/useBlockManager';
 import ResponsiveGrid from './ResponsiveGrid';
 
-const SectionContent = ({ blocks, updateBlocks, settings, openToolbarId, onBlockClick }) => {
+const SectionContent = ({ blocks, updateBlocks, settings, openToolbarId, onBlockClick, theme }) => {
   const mergedSettings = mergeSettings(settings);
   const { previewMode } = useContext(PreviewModeContext);
   const [ref, { width }] = useMeasure();
@@ -116,6 +116,7 @@ const SectionContent = ({ blocks, updateBlocks, settings, openToolbarId, onBlock
         openToolbarId={openToolbarId}
         onBlockClick={onBlockClick}
         onHeightChange={handleBlockHeightChange}
+        theme={theme}
       />
     </div>
   );

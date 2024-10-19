@@ -47,6 +47,7 @@ const Preview = () => {
           updateBlocks={() => {}} // No updates in preview mode
           onBlockClick={handleBlockClick}
           openToolbarId={null}
+          theme={section.theme}
         />
       ))}
     </div>
