@@ -6,6 +6,7 @@ import { mergeSettings } from '../../utils/settingsUtils';
 import { getBlockConfig } from '../../utils/blockConfig';
 import { Z_INDEXES } from '../../utils/zIndexes';
 import { defaultTheme } from '../../components/Theme/themeManagement';
+import useArticleData from '../../hooks/useArticleData';
 
 const SectionContainer = ({ 
   sectionId, 
@@ -27,17 +28,42 @@ const SectionContainer = ({
   const { previewMode } = useContext(PreviewModeContext);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const deleteModalRef = useRef(null);
+  const { getNextArticle, loading, error } = useArticleData('Pages');
 
-  const addBlock = (type = 'text') => {
+  const addBlock = async (type = 'text') => {
     const config = getBlockConfig(type);
-    const newBlock = {
-      id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      type: type,
-      content: type === 'carousel' ? [] : `New ${type} block`,
-      x: 0,
-      w: config.defaultW,
-      h: config.defaultH,
-    };
+    let newBlock;
+
+    if (type === 'card') {
+      const articleData = await getNextArticle();
+      if (articleData) {
+        newBlock = {
+          id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          type: type,
+          content: {
+            heading: articleData.heading,
+            issue_date: articleData.issue_date,
+            body: articleData.body
+          },
+          x: 0,
+          w: config.defaultW,
+          h: config.defaultH,
+        };
+      } else {
+        console.error('No more articles available');
+        return;
+      }
+    } else {
+      newBlock = {
+        id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        type: type,
+        content: type === 'carousel' ? [] : `New ${type} block`,
+        x: 0,
+        w: config.defaultW,
+        h: config.defaultH,
+      };
+    }
+
     updateBlocks([...blocks, newBlock]);
   };
 
