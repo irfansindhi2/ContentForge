@@ -29,7 +29,7 @@ const CardBlock = ({ content }) => {
   const formattedDate = new Date(issue_date).toLocaleDateString();
 
   return (
-    <div className="card bg-base-100 w-full h-full shadow-xl flex flex-col overflow-hidden">
+    <div className="card bg-base-100 w-full h-full shadow flex flex-col overflow-hidden">
       <figure className="w-full h-0 pb-[56.25%] relative">
         <img src={imageUrl} alt={imageAlt} className="absolute top-0 left-0 w-full h-full object-cover" />
       </figure>
