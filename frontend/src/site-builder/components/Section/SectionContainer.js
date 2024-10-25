@@ -1,4 +1,4 @@
-import React, { useContext, useState, useRef } from 'react';
+import React, { useContext, useState, useRef, useEffect } from 'react';
 import SectionContent from './SectionContent';
 import SectionToolbar from './SectionToolbar';
 import { PreviewModeContext } from '../../PreviewModeContext';
@@ -28,7 +28,16 @@ const SectionContainer = ({
   const { previewMode } = useContext(PreviewModeContext);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const deleteModalRef = useRef(null);
-  const { getNextArticle, loading, error } = useArticleData('Pages');
+  const { getNextArticle } = useArticleData('Pages');
+
+  // Initialize the modal when component mounts
+  useEffect(() => {
+    if (deleteModalRef.current) {
+      deleteModalRef.current.addEventListener('close', () => {
+        setShowDeleteModal(false);
+      });
+    }
+  }, []);
 
   const addBlock = async (type = 'text') => {
     const config = getBlockConfig(type);
@@ -67,28 +76,37 @@ const SectionContainer = ({
     updateBlocks([...blocks, newBlock]);
   };
 
-  const handleDeleteClick = () => {
-    setShowDeleteModal(true);
-    if (deleteModalRef.current) {
-      deleteModalRef.current.showModal();
+  const handleDeleteClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!previewMode) {
+      setShowDeleteModal(true);
+      if (deleteModalRef.current && !deleteModalRef.current.open) {
+        deleteModalRef.current.showModal();
+      }
     }
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = (e) => {
+    e.preventDefault();
     onDelete();
+    if (deleteModalRef.current) {
+      deleteModalRef.current.close();
+    }
     setShowDeleteModal(false);
   };
 
-  const handleDeleteCancel = () => {
+  const handleDeleteCancel = (e) => {
+    e.preventDefault();
+    if (deleteModalRef.current) {
+      deleteModalRef.current.close();
+    }
     setShowDeleteModal(false);
   };
 
   const handleSettingsChange = (newSettings) => {
-    updateSettings(newSettings);
-  };
-
-  const handleDuplicate = () => {
-    onDuplicate();
+    updateSettings(mergeSettings(settings, newSettings));
   };
 
   return (
@@ -102,7 +120,7 @@ const SectionContainer = ({
           addBlock={addBlock}
           onMoveUp={onMoveUp}
           onMoveDown={onMoveDown}
-          onDuplicate={handleDuplicate}
+          onDuplicate={onDuplicate}
           onDelete={handleDeleteClick}
           isFirst={isFirst}
           isLast={isLast}
@@ -122,20 +140,25 @@ const SectionContainer = ({
         />
       </div>
 
-      {/* Daisy UI Modal for delete confirmation */}
-      <dialog ref={deleteModalRef} className="modal modal-bottom sm:modal-middle" style={{ zIndex: Z_INDEXES.DELETE_MODAL }}>
-        <form method="dialog" className="modal-box">
-          <h3 className="font-bold text-lg">Confirm Deletion</h3>
-          <p className="py-4">Are you sure you want to delete this section? This action cannot be undone.</p>
-          <div className="modal-action">
-            <button className="btn" onClick={handleDeleteCancel}>Cancel</button>
-            <button className="btn btn-error" onClick={handleDeleteConfirm}>Delete</button>
-          </div>
-        </form>
-        <form method="dialog" className="modal-backdrop">
-          <button onClick={handleDeleteCancel}>close</button>
-        </form>
-      </dialog>
+      {!previewMode && (
+        <dialog 
+          ref={deleteModalRef} 
+          className="modal modal-bottom sm:modal-middle" 
+          style={{ zIndex: Z_INDEXES.DELETE_MODAL }}
+        >
+          <form method="dialog" className="modal-box">
+            <h3 className="font-bold text-lg">Confirm Deletion</h3>
+            <p className="py-4">Are you sure you want to delete this section? This action cannot be undone.</p>
+            <div className="modal-action">
+              <button className="btn" onClick={handleDeleteCancel}>Cancel</button>
+              <button className="btn btn-error" onClick={handleDeleteConfirm}>Delete</button>
+            </div>
+          </form>
+          <form method="dialog" className="modal-backdrop">
+            <button onClick={handleDeleteCancel}>close</button>
+          </form>
+        </dialog>
+      )}
     </div>
   );
 };
